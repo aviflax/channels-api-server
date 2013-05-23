@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>${server-name} » Groups</title>
+</head>
+<body>
+
+<header>
+  <h1>
+    <nav>
+      <a href="/">${server-name}</a>
+      » Groups
+    </nav>
+  </h1>
+</header>
+
+<ul>
+  <li><a href="/groups/all-at-arc">All@Arc</a></li>
+  <li><a href="/groups/insight-team">Insight Team</a></li>
+  <li><a href="/groups/readability-team">Readability Team</a></li>
+</ul>
+
+<form action="./groups" method="POST">
+  <legend>Create a new group</legend>
+  <input type="text" name="name" id="name" required>
+  <button type="submit">Create Group</button>
+</form>
+
+</body>
+</html>
