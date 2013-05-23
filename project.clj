@@ -5,6 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [compojure "1.2.0-SNAPSHOT"]
+                 [com.ashafa/clutch "0.4.0-RC1"]
                  [ring/ring-jetty-adapter "1.2.0-SNAPSHOT"]
                  [ring/ring-json "0.2.0"]
                  [enlive/enlive "1.1.1"]]
