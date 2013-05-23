@@ -8,32 +8,32 @@
 
 (c/defroutes server
   (c/GET "/"
-     []
-     (t/root context))
+    []
+    (t/root context))
 
   (c/GET "/groups"
-     []
-     (t/groups context))
+    []
+    (t/groups context))
 
   (c/GET "/groups/:group-id"
-     []
-     (t/a-group context))
+    []
+    (t/a-group context))
 
   (c/GET "/groups/:group-id/topics"
-     []
-     (t/topics context))
+    []
+    (t/topics context))
 
   (c/GET "/groups/:group-id/topics/:topic-id"
-     []
-     (t/a-topic context))
+    []
+    (t/a-topic context))
 
   (c/GET "/groups/:group-id/topics/:topic-id/messages"
-     []
-     (t/messages context))
+    []
+    (t/messages context))
 
   (c/GET "/groups/:group-id/topics/:topic-id/messages/:message-id"
-     [message-id]
-     (t/a-message (assoc context :message-id message-id))))
+    [message-id]
+    (t/a-message (assoc context :message-id message-id))))
 
 (def ring-handler
   "this is a var so it can be used by lein-ring"
