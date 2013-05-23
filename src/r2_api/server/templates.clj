@@ -7,9 +7,11 @@
   [:header :h1 h/any-node] (h/replace-vars context))
 
 (h/deftemplate groups "templates/groups.html"
-  [context]
+  [context groups]
   [:title h/any-node] (h/replace-vars context)
-  [:header :h1 h/any-node] (h/replace-vars context))
+  [:header :h1 h/any-node] (h/replace-vars context)
+  [:ul#groups :li] (h/clone-for [group groups]
+                     (h/content (:name group))))
 
 (h/deftemplate a-group "templates/a_group.html"
   [context]

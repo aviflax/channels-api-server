@@ -1,10 +1,19 @@
 (ns r2-api.server.core
   (:require [r2-api.server.templates :as t]
             [compojure.core :as c]
+            [com.ashafa.clutch :as couchdb]
             [compojure.handler :refer [api]]
             [ring.adapter.jetty :refer [run-jetty]]))
 
 (def context {:server-name "Avi’s A2"})
+
+(def db (couchdb/couch "avis-a2"))
+
+(couchdb/create! db)
+
+(defn get-groups [db]
+  (map #(hash-map :id (:id %) :name (:value %))
+       (couchdb/get-view db "api" :groups)))
 
 (c/defroutes server
   (c/GET "/"
@@ -13,27 +22,32 @@
 
   (c/GET "/groups"
     []
+    (t/groups context (get-groups db)))
+
+  (c/POST "/groups"
+    [name]
+    (couchdb/assoc! db (str (java.util.UUID/randomUUID)) {:type "group" :name name})
     (t/groups context))
 
   (c/GET "/groups/:group-id"
-    []
-    (t/a-group context))
+    {params :params}
+    (t/a-group (merge context params)))
 
   (c/GET "/groups/:group-id/topics"
-    []
-    (t/topics context))
+    {params :params}
+    (t/topics (merge context params)))
 
   (c/GET "/groups/:group-id/topics/:topic-id"
-    []
-    (t/a-topic context))
+    {params :params}
+    (t/a-topic (merge context params)))
 
   (c/GET "/groups/:group-id/topics/:topic-id/messages"
-    []
-    (t/messages context))
+    {params :params}
+    (t/messages (merge context params)))
 
   (c/GET "/groups/:group-id/topics/:topic-id/messages/:message-id"
-    [message-id]
-    (t/a-message (assoc context :message-id message-id))))
+    {params :params}
+    (t/a-message (merge context params))))
 
 (def ring-handler
   "this is a var so it can be used by lein-ring"
