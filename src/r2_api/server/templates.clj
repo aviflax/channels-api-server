@@ -8,12 +8,6 @@
   (fn [node]
     (apply update-in node [:attrs attr] f args)))
 
-(defn attr-content
-  "An Enlive transformer which replaces the content of the indicated attribute."
-  [attr content]
-  (fn [node]
-    (assoc-in node [:attrs attr] content)))
-
 (h/deftemplate root "templates/root.html"
   [context]
   [:title h/any-node] (h/replace-vars context)
@@ -33,7 +27,7 @@
   [context]
   [:title h/any-node] (h/replace-vars context)
   [:header :h1 h/any-node] (h/replace-vars context)
-  [:a#topics] (attr-content :href (str "/groups/" (:group-id context) "/topics")))
+  [:a#topics] (h/set-attr :href (str "/groups/" (:group-id context) "/topics")))
 
 (h/deftemplate topics "templates/topics.html"
   [context]
