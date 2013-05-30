@@ -10,11 +10,11 @@
 
 (h/deftemplate root "templates/root.html"
   [context]
-  [:html h/any-node] (h/replace-vars context))
+  [:html h/text-node] (h/replace-vars context))
 
 (h/deftemplate groups "templates/groups.html"
   [context groups]
-  [:html h/any-node] (h/replace-vars context)
+  [:html h/text-node] (h/replace-vars context)
   [:ul#groups :li] (h/clone-for [group groups]
                      [:a] (h/do->
                             (h/set-attr :href (str "/groups/" (:id group)))
@@ -22,22 +22,22 @@
 
 (h/deftemplate a-group "templates/a_group.html"
   [context group]
-  [:html h/any-node] (h/replace-vars (merge context group))
+  [:html h/text-node] (h/replace-vars (merge context group))
   [:a#topics] (h/set-attr :href (str "/groups/" (:group-id context) "/topics")))
 
 (h/deftemplate topics "templates/topics.html"
   [context]
-  [:html h/any-node] (h/replace-vars context))
+  [:html h/text-node] (h/replace-vars context))
 
 (h/deftemplate a-topic "templates/a_topic.html"
   [context]
-  [:html h/any-node] (h/replace-vars context))
+  [:html h/text-node] (h/replace-vars context))
 
 (h/deftemplate messages "templates/messages.html"
   [context]
-  [:html h/any-node] (h/replace-vars context))
+  [:html h/text-node] (h/replace-vars context))
 
 (h/deftemplate a-message "templates/a_message.html"
   [context]
-  [:html h/any-node] (h/replace-vars context)
+  [:html h/text-node] (h/replace-vars context)
   [:span.message-id] (h/content (:message-id context)))
