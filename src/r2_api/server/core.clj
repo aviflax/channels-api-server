@@ -5,9 +5,9 @@
             [compojure.handler :refer [api]]
             [ring.adapter.jetty :refer [run-jetty]]))
 
-(def context {:server-name "Avi’s A2"})
+(def context {:server-name "Avi’s R2"})
 
-(def db (couchdb/couch "avis-a2"))
+(def db (couchdb/couch "avis-r2"))
 
 (couchdb/create! db)
 
