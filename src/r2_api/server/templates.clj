@@ -15,18 +15,15 @@
 
 (h/deftemplate groups "templates/groups.html"
   [context groups]
-  [:title h/any-node] (h/replace-vars context)
-  [:header :h1 h/any-node] (h/replace-vars context)
+  [:html h/any-node] (h/replace-vars context)
   [:ul#groups :li] (h/clone-for [group groups]
-                     [:a]
-                     (h/do->
-                       (h/set-attr :href (str "/groups/" (:id group)))
-                       (h/content (:name group)))))
+                     [:a] (h/do->
+                            (h/set-attr :href (str "/groups/" (:id group)))
+                            (h/content (:name group)))))
 
 (h/deftemplate a-group "templates/a_group.html"
-  [context]
-  [:title h/any-node] (h/replace-vars context)
-  [:header :h1 h/any-node] (h/replace-vars context)
+  [context group]
+  [:html h/any-node] (h/replace-vars (merge context group))
   [:a#topics] (h/set-attr :href (str "/groups/" (:group-id context) "/topics")))
 
 (h/deftemplate topics "templates/topics.html"
