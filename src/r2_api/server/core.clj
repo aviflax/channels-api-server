@@ -31,7 +31,8 @@
 
   (c/GET "/groups/:group-id"
     {params :params}
-    (t/a-group (merge context params)))
+    (let [group (couchdb/get-document db (:group-id params))]
+      (t/a-group (merge context params {:group-id (:_id group) :group-name (:name group)}))))
 
   (c/GET "/groups/:group-id/topics"
     {params :params}
