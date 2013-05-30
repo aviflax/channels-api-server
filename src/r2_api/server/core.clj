@@ -1,60 +1,60 @@
 (ns r2-api.server.core
   (:require [r2-api.server.templates :as t]
-            [compojure.core :as c]
-            [com.ashafa.clutch :as couchdb]
-            [compojure.handler :refer [api]]
-            [ring.adapter.jetty :refer [run-jetty]]))
+            [compojure.core :as c :refer [GET PUT POST DELETE]]
+            [com.ashafa.clutch :as couch]
+            [compojure.handler :as ch]
+            [ring.adapter.jetty :as ra]))
 
 (def context {:server-name "Avi’s R2"})
 
-(def db (couchdb/couch "avis-r2"))
+(def db (couch/couch "avis-r2"))
 
-(couchdb/create! db)
+(couch/create! db)
 
 (defn get-groups [db]
   (map #(hash-map :id (:id %) :name (:value %))
-       (couchdb/get-view db "api" :groups)))
+       (couch/get-view db "api" :groups)))
 
 (c/defroutes server
-  (c/GET "/"
+  (GET "/"
     []
     (t/root context))
 
-  (c/GET "/groups"
+  (GET "/groups"
     []
     (t/groups context (get-groups db)))
 
-  (c/POST "/groups"
+  (POST "/groups"
     [name]
-    (couchdb/assoc! db (str (java.util.UUID/randomUUID)) {:type "group" :name name})
+    (couch/assoc! db (str (java.util.UUID/randomUUID)) {:type "group" :name name})
     (t/groups context))
 
-  (c/GET "/groups/:group-id"
+  (GET "/groups/:group-id"
     {params :params}
-      (t/a-group (merge context params) (couchdb/get-document db (:group-id params))))
+      (t/a-group (merge context params) (couch/get-document db (:group-id params))))
 
-  (c/GET "/groups/:group-id/topics"
+  (GET "/groups/:group-id/topics"
     {params :params}
     (t/topics (merge context params)))
 
-  (c/GET "/groups/:group-id/topics/:topic-id"
+  (GET "/groups/:group-id/topics/:topic-id"
     {params :params}
     (t/a-topic (merge context params)))
 
-  (c/GET "/groups/:group-id/topics/:topic-id/messages"
+  (GET "/groups/:group-id/topics/:topic-id/messages"
     {params :params}
     (t/messages (merge context params)))
 
-  (c/GET "/groups/:group-id/topics/:topic-id/messages/:message-id"
+  (GET "/groups/:group-id/topics/:topic-id/messages/:message-id"
     {params :params}
     (t/a-message (merge context params))))
 
 (def ring-handler
   "this is a var so it can be used by lein-ring"
-  (-> (api server)
+  (-> (ch/api server)
       ;insert middleware here
       ))
 
 (defn -main [& args]
   (println "starting Web server")
-  (run-jetty ring-handler {:port 3000 :join? false}))
+  (ra/run-jetty ring-handler {:port 3000 :join? false}))
