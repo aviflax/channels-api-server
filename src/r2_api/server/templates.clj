@@ -55,10 +55,18 @@
   [:a#messages] (h/set-attr :href (str "/groups/" (:_id group) "/topics/" (:_id topic) "/messages")))
 
 (h/deftemplate messages "templates/messages.html"
-  [context]
-  [:html h/text-node] (h/replace-vars context))
+  [context group topic messages]
+  [:html h/text-node] (h/replace-vars (combine context group topic))
+  [:a#group] (attr-append :href str (:_id group))
+  [:a#topics] (h/set-attr :href (str "/groups/" (:_id group) "/topics"))
+  [:a#topic] (h/set-attr :href (str "/groups/" (:_id group) "/topics/" (:_id topic)))
+  [:input#group-id] (h/set-attr :value (:_id group))
+  [:input#topic-id] (h/set-attr :value (:_id topic))
+  [:article.message] (h/clone-for [message messages]
+                       [:a#user] (h/content (get-in message [:user :name]))
+                       [:pre] (h/content (:body message))))
 
 (h/deftemplate a-message "templates/a_message.html"
-  [context]
-  [:html h/text-node] (h/replace-vars context)
+  [context group topic message]
+  [:html h/text-node] (h/replace-vars (combine context group topic))
   [:span.message-id] (h/content (:message-id context)))

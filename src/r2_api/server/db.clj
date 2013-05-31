@@ -21,3 +21,6 @@
 (defn get-topics [group-id]
   (map #(hash-map :_id (:id %) :name (:value %))
        (couch/get-view db "api" :topics {:key group-id})))
+
+(defn get-messages [topic-id]
+  (map :doc (couch/get-view db "api" :messages {:key topic-id :include_docs "true"})))

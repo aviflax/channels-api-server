@@ -41,8 +41,17 @@
     (t/a-topic context (db/get-doc group-id) (db/get-doc topic-id)))
 
   (GET "/groups/:group-id/topics/:topic-id/messages"
-    {params :params}
-    (t/messages (merge context params)))
+    [group-id topic-id]
+    (t/messages context (db/get-doc group-id) (db/get-doc topic-id) (db/get-messages topic-id)))
+
+  (POST "/groups/:group-id/topics/:topic-id/messages"
+    [group-id topic-id body]
+    (db/new-doc! {:type "message"
+                  :body body
+                  :group {:id group-id}
+                  :topic {:id topic-id}
+                  :user {:id "avi-flax" :name "Avi Flax"}})
+    (t/messages context (db/get-doc group-id) (db/get-doc topic-id)))
 
   (GET "/groups/:group-id/topics/:topic-id/messages/:message-id"
     {params :params}
