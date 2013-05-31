@@ -1,0 +1,16 @@
+{
+  "_id": "_design/api",
+  "_rev": "4-b04137aded2fe0297c8a3fa83a436944",
+  "language": "javascript",
+  "views": {
+    "groups": {
+      "map": "function(doc) {\n  if (doc.type == \"group\")\n    emit(null, doc.name);\n}"
+    },
+    "topics": {
+      "map": "function(doc) {\n  if (doc.type == \"topic\")\n    emit(doc.group.id, doc.name);\n}"
+    },
+    "messages": {
+      "map": "function(doc) {\n  if (doc.type == \"message\")\n    emit(doc.topic.id, doc.body);\n}"
+    }
+  }
+}
