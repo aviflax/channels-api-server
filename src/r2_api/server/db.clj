@@ -11,8 +11,8 @@
   (couch/get-document db id))
 
 (defn new-doc!
-  [content]
-  (couch/assoc! db (str (java.util.UUID/randomUUID)) content))
+  [doc]
+  (couch/assoc! db (str (java.util.UUID/randomUUID)) doc))
 
 (defn get-groups []
   (map #(hash-map :_id (:id %) :name (:value %))
