@@ -12,8 +12,17 @@
 (couch/create! db)
 
 (defn get-groups [db]
-  (map #(hash-map :id (:id %) :name (:value %))
+  (map #(hash-map :_id (:id %) :name (:value %))
        (couch/get-view db "api" :groups)))
+
+(defn get-doc
+  "Just for convenience as it’s shorter."
+  [db id]
+  (couch/get-document db id))
+
+(defn get-topics [db group-id]
+  (map #(hash-map :_id (:id %) :name (:value %))
+       (couch/get-view db "api" :topics {:key group-id})))
 
 (c/defroutes server
   (GET "/"
@@ -27,19 +36,26 @@
   (POST "/groups"
     [name]
     (couch/assoc! db (str (java.util.UUID/randomUUID)) {:type "group" :name name})
-    (t/groups context))
+    (t/groups context (get-groups db)))
 
   (GET "/groups/:group-id"
     {params :params}
-      (t/a-group (merge context params) (couch/get-document db (:group-id params))))
+      (t/a-group (merge context params) (get-doc db (:group-id params))))
 
   (GET "/groups/:group-id/topics"
     {params :params}
-    (t/topics (merge context params)))
+    (t/topics (merge context params)
+              (couch/get-document db (:group-id params))
+              (get-topics db (:group-id params))))
+
+  (POST "/groups/:group-id/topics"
+    [group-id name]
+    (couch/assoc! db (str (java.util.UUID/randomUUID)) {:type "topic" :name name :group {:id group-id}})
+    (t/topics context (get-doc db group-id) (get-topics db group-id)))
 
   (GET "/groups/:group-id/topics/:topic-id"
-    {params :params}
-    (t/a-topic (merge context params)))
+    [group-id topic-id]
+    (t/a-topic context (get-doc db group-id) (get-doc db topic-id)))
 
   (GET "/groups/:group-id/topics/:topic-id/messages"
     {params :params}

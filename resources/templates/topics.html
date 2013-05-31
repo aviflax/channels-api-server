@@ -2,35 +2,29 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>${server-name} » All@Arc » Topics</title>
+    <title>${server-name} » ${group-name} » Topics</title>
 </head>
 <body>
 
-<header>  
+<header>
   <h1>
     <nav>
       <a href="/">${server-name}</a>
       » <a href="/groups">Groups</a>
-      » <a href="/groups/all-at-arc">All@Arc</a>
+      » <a id="group" href="/groups/">${group-name}</a>
       » Topics
     </nav>
   </h1>
 </header>
 
-<ul>
-  <li><a href="/groups/all-at-arc/topics/vpn-issues">VPN Issues</a></li>
-  <li><a href="/groups/all-at-arc/topics/some-topic">Some topic</a></li>
-  <li><a href="/groups/all-at-arc/topics/some-topic">Some topic</a></li>
-  <li><a href="/groups/all-at-arc/topics/some-topic">Some topic</a></li>
-  <li><a href="/groups/all-at-arc/topics/some-topic">Some topic</a></li>
-  <li><a href="/groups/all-at-arc/topics/some-topic">Some topic</a></li>
-  <li><a href="/groups/all-at-arc/topics/some-topic">Some topic</a></li>
-  <li><a href="/groups/all-at-arc/topics/some-topic">Some topic</a></li>
+<ul id="topics">
+  <li><a href="/groups/${group-id}/topics/${topic-id}">Some topic</a></li>
 </ul>
 
 <form action="./topics" method="POST">
   <legend>Create a new topic</legend>
   <input type="text" name="name" id="name" required>
+  <input type="hidden" name="group-id" id="group-id" value="${group-id}"/>
   <button type="submit">Create Topic</button>
 </form>
 
