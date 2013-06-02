@@ -5,6 +5,7 @@
             [compojure.handler :as ch]
             [ring.adapter.jetty :as ra]
             [clj-time.core :refer [now]]
+            [slugger.core :refer [->slug]]
             [clj-time.format :refer [formatters unparse]]))
 
 (def context {:server-name "Avi’s R2"})
@@ -20,7 +21,7 @@
 
   (POST "/groups"
     [name]
-    (db/new-doc! {:type "group" :name name})
+    (db/new-doc! {:type "group" :name name :slug (->slug name)})
     (t/groups context (db/get-groups)))
 
   (GET "/groups/:group-id"
@@ -35,7 +36,7 @@
 
   (POST "/groups/:group-id/discussions"
     [group-id name]
-    (db/new-doc! {:type "discussion" :name name :group {:id group-id}})
+    (db/new-doc! {:type "discussion" :name name :slug (->slug name) :group {:id group-id}})
     (t/discussions context (db/get-doc group-id) (db/get-discussions group-id)))
 
   (GET "/groups/:group-id/discussions/:discussion-id"

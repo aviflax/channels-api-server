@@ -9,6 +9,7 @@
                  [ring/ring-jetty-adapter "1.2.0-SNAPSHOT"]
                  [ring/ring-json "0.2.0"]
                  [enlive/enlive "1.1.1"]
+                 [slugger "1.0.1"]
                  [clj-time "0.5.1"]]
   :dev-dependencies []
   :main r2-api.server.core
