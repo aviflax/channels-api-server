@@ -3,7 +3,9 @@
             [r2-api.server.db :as db]
             [compojure.core :as c :refer [GET PUT POST DELETE]]
             [compojure.handler :as ch]
-            [ring.adapter.jetty :as ra]))
+            [ring.adapter.jetty :as ra]
+            [clj-time.core :refer [now]]
+            [clj-time.format :refer [formatters unparse]]))
 
 (def context {:server-name "Avi’s R2"})
 
@@ -50,8 +52,9 @@
                   :body body
                   :group {:id group-id}
                   :topic {:id topic-id}
+                  :created (unparse (:date-time-no-ms formatters) (now))
                   :user {:id "avi-flax" :name "Avi Flax"}})
-    (t/messages context (db/get-doc group-id) (db/get-doc topic-id)))
+    (t/messages context (db/get-doc group-id) (db/get-doc topic-id) (db/get-messages topic-id)))
 
   (GET "/groups/:group-id/topics/:topic-id/messages/:message-id"
     {params :params}

@@ -16,6 +16,19 @@
    (merge (combine context group)
           {:topic-id (:_id topic) :topic-name (:name topic)})))
 
+(defn ^:private indexed
+  "Returns a lazy sequence of [index, item] pairs, where items come
+  from 's' and indexes count up from zero.
+
+  (indexed '(a b c d))  =>  ([0 a] [1 b] [2 c] [3 d])
+
+  Stolen from https://github.com/richhickey/clojure-contrib/blob/95dddbbdd748b0cc6d9c8486b8388836e6418848/src/main/clojure/clojure/contrib/seq_utils.clj#L51"
+  ([s]
+    (indexed s 0))
+
+  ([s start]
+    (map vector (iterate inc start) s)))
+
 (h/deftemplate root "templates/root.html"
   [context]
   [:html h/text-node] (h/replace-vars context))
@@ -62,9 +75,14 @@
   [:a#topic] (h/set-attr :href (str "/groups/" (:_id group) "/topics/" (:_id topic)))
   [:input#group-id] (h/set-attr :value (:_id group))
   [:input#topic-id] (h/set-attr :value (:_id topic))
-  [:article.message] (h/clone-for [message messages]
-                       [:a#user] (h/content (get-in message [:user :name]))
-                       [:pre] (h/content (:body message))))
+  [:article.message] (h/clone-for [[i message] (indexed messages 1)]
+                       [:a#user] (h/do->
+                                   (h/set-attr :href (str "/people/" (get-in message [:user :id])))
+                                   (h/content (get-in message [:user :name])))
+                       [:pre] (h/content (:body message))
+                       [:#date] (h/content (:created message))
+                       [:#message-number] (h/content (str i))
+                       [:a#message] (h/set-attr :href (str "/groups/" (:_id group) "/topics/" (:_id topic) "/messages/" i))))
 
 (h/deftemplate a-message "templates/a_message.html"
   [context group topic message]
