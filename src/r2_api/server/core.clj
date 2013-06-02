@@ -27,38 +27,38 @@
     {params :params}
       (t/a-group (merge context params) (db/get-doc (:group-id params))))
 
-  (GET "/groups/:group-id/topics"
+  (GET "/groups/:group-id/discussions"
     {params :params}
-    (t/topics (merge context params)
+    (t/discussions (merge context params)
               (db/get-doc (:group-id params))
-              (db/get-topics (:group-id params))))
+              (db/get-discussions (:group-id params))))
 
-  (POST "/groups/:group-id/topics"
+  (POST "/groups/:group-id/discussions"
     [group-id name]
-    (db/new-doc! {:type "topic" :name name :group {:id group-id}})
-    (t/topics context (db/get-doc group-id) (db/get-topics group-id)))
+    (db/new-doc! {:type "discussion" :name name :group {:id group-id}})
+    (t/discussions context (db/get-doc group-id) (db/get-discussions group-id)))
 
-  (GET "/groups/:group-id/topics/:topic-id"
-    [group-id topic-id]
-    (t/a-topic context (db/get-doc group-id) (db/get-doc topic-id)))
+  (GET "/groups/:group-id/discussions/:discussion-id"
+    [group-id discussion-id]
+    (t/a-discussion context (db/get-doc group-id) (db/get-doc discussion-id)))
 
-  (GET "/groups/:group-id/topics/:topic-id/messages"
-    [group-id topic-id]
-    (t/messages context (db/get-doc group-id) (db/get-doc topic-id) (db/get-messages topic-id)))
+  (GET "/groups/:group-id/discussions/:discussion-id/messages"
+    [group-id discussion-id]
+    (t/messages context (db/get-doc group-id) (db/get-doc discussion-id) (db/get-messages discussion-id)))
 
-  (POST "/groups/:group-id/topics/:topic-id/messages"
-    [group-id topic-id body]
+  (POST "/groups/:group-id/discussions/:discussion-id/messages"
+    [group-id discussion-id body]
     (db/new-doc! {:type "message"
                   :body body
                   :group {:id group-id}
-                  :topic {:id topic-id}
+                  :discussion {:id discussion-id}
                   :created (unparse (:date-time-no-ms formatters) (now))
                   :user {:id "avi-flax" :name "Avi Flax"}})
-    (t/messages context (db/get-doc group-id) (db/get-doc topic-id) (db/get-messages topic-id)))
+    (t/messages context (db/get-doc group-id) (db/get-doc discussion-id) (db/get-messages discussion-id)))
 
-  (GET "/groups/:group-id/topics/:topic-id/messages/:message-id"
-    [group-id topic-id message-id]
-    (apply t/a-message (concat [context] (db/get-multi [group-id topic-id message-id])))))
+  (GET "/groups/:group-id/discussions/:discussion-id/messages/:message-id"
+    [group-id discussion-id message-id]
+    (apply t/a-message (concat [context] (db/get-multi [group-id discussion-id message-id])))))
 
 (def ring-handler
   "this is a var so it can be used by lein-ring"

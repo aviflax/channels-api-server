@@ -2,19 +2,19 @@
 
 /groups
 /groups/{group}
-/groups/{group}/topics
-/groups/{group}/topics/{topic}
-/groups/{group}/topics/{topic}/messages
-/groups/{group}/topics/{topic}/messages/{message}
+/groups/{group}/discussions
+/groups/{group}/discussions/{discussion}
+/groups/{group}/discussions/{discussion}/messages
+/groups/{group}/discussions/{discussion}/messages/{message}
 /groups/{group}/hooks
 /groups/{group}/hooks/{hook}
 
-* But wait — what about topics/threads/discussions?
-* Let’s think about this — what works for Google Groups? A Group is essentially a topic. It’s a set of people who are talking about a specific broad topic (like Node or Java) with lots of more specific discussions — i.e. threads
+* But wait — what about discussions/threads/discussions?
+* Let’s think about this — what works for Google Groups? A Group is essentially a discussion. It’s a set of people who are talking about a specific broad discussion (like Node or Java) with lots of more specific discussions — i.e. threads
 * So we need to support some kind of threading or discussions, but it needs to be WAY easy to create one — it needs to be a super-lightweight action
-* With a mailing list, you just send a new message to the list with a subject. The subject becomes the topic of the thread. People participate in the thread simply by replying to any message in the thread. All replies always belong to a specific thread. You fork a thread by changing the subject.
-* With twitter, a thread is a tweet any any replies to it, and any replies to them, etc. the topic is whatever is discussed. You don’t have a subject field so the cognitive overhead of starting a discussion is lower. (This is good and bad.)
-* With Discourse, discussions are called topics. Topics can be assigned categories, but they don’t necessarily live in them — one can see a list of all topics across all categories (that’s the default view). Categories are basically tags.
+* With a mailing list, you just send a new message to the list with a subject. The subject becomes the discussion of the thread. People participate in the thread simply by replying to any message in the thread. All replies always belong to a specific thread. You fork a thread by changing the subject.
+* With twitter, a thread is a tweet any any replies to it, and any replies to them, etc. the discussion is whatever is discussed. You don’t have a subject field so the cognitive overhead of starting a discussion is lower. (This is good and bad.)
+* With Discourse, discussions are called discussions. Discussions can be assigned categories, but they don’t necessarily live in them — one can see a list of all discussions across all categories (that’s the default view). Categories are basically tags.
 * So there definitely needs to be a way to get a list of threads/discussions
 * And when retrieving data, that should be how they’re organized/grouped
 * But when starting a discussion it needs to be super easy

@@ -19,20 +19,20 @@ def groups():
 def a_group(group_id):
   return render_template('a_group.html', server_name=app.config['server_name'])
 
-@app.route('/groups/<group_id>/topics')
-def topics(group_id):
-  return render_template('topics.html', server_name=app.config['server_name'])
+@app.route('/groups/<group_id>/discussions')
+def discussions(group_id):
+  return render_template('discussions.html', server_name=app.config['server_name'])
 
-@app.route('/groups/<group_id>/topics/<topic_id>')
-def a_topic(group_id, topic_id):
-  return render_template('a_topic.html', server_name=app.config['server_name'])
+@app.route('/groups/<group_id>/discussions/<discussion_id>')
+def a_discussion(group_id, discussion_id):
+  return render_template('a_discussion.html', server_name=app.config['server_name'])
 
-@app.route('/groups/<group_id>/topics/<topic_id>/messages')
-def messages(group_id, topic_id):
+@app.route('/groups/<group_id>/discussions/<discussion_id>/messages')
+def messages(group_id, discussion_id):
   return render_template('messages.html', server_name=app.config['server_name'])
 
-@app.route('/groups/<group_id>/topics/<topic_id>/messages/<message_id>')
-def a_message(group_id, topic_id, message_id):
+@app.route('/groups/<group_id>/discussions/<discussion_id>/messages/<message_id>')
+def a_message(group_id, discussion_id, message_id):
   return render_template('a_message.html', server_name=app.config['server_name'], message_id=message_id)
 
 if __name__ == '__main__':

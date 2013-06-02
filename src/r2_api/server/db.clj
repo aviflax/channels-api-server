@@ -18,12 +18,12 @@
   (map #(hash-map :_id (:id %) :name (:value %))
        (couch/get-view db "api" :groups)))
 
-(defn get-topics [group-id]
+(defn get-discussions [group-id]
   (map #(hash-map :_id (:id %) :name (:value %))
-       (couch/get-view db "api" :topics {:key group-id})))
+       (couch/get-view db "api" :discussions {:key group-id})))
 
-(defn get-messages [topic-id]
-  (map :doc (couch/get-view db "api" :messages {:key topic-id :include_docs "true"})))
+(defn get-messages [discussion-id]
+  (map :doc (couch/get-view db "api" :messages {:key discussion-id :include_docs "true"})))
 
 (defn get-multi
   "Accepts a sequence of IDs and returns a map of id to document."

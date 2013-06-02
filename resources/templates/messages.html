@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>${server-name} » ${group-name} » ${topic-name} » Messages</title>
+    <title>${server-name} » ${group-name} » ${discussion-name} » Messages</title>
 </head>
 <body>
 
@@ -12,8 +12,8 @@
       <a href="/">${server-name}</a>
       » <a href="/groups">Groups</a>
       » <a id="group" href="/groups/">${group-name}</a>
-      » <a id="topics" href="/groups/${group-id}/topics">Topics</a>
-      » <a id="topic" href="/groups/all-at-arc/topics/vpn-issues">${topic-name}</a>
+      » <a id="discussions" href="/groups/${group-id}/discussions">Discussions</a>
+      » <a id="discussion" href="/groups/all-at-arc/discussions/vpn-issues">${discussion-name}</a>
       » Messages
     </nav>
   </h1>
@@ -21,7 +21,7 @@
 
 <article class="message">
   <header>
-    <section><a id="message" href="/groups/all-at-arc/topics/vpn-issues/messages/1">Message <span id="message-number">1</span></a></section>
+    <section><a id="message" href="/groups/all-at-arc/discussions/vpn-issues/messages/1">Message <span id="message-number">1</span></a></section>
     <section>From: <a id="user" href="/people/joel-potischman">Joel Potischman</a></section>
     <section>Date: <span id="date">Friday, 12 April, 2013 at 11:21</span></section>
   </header>
@@ -38,10 +38,10 @@
 <!-- TODO <nav id="page" data-page-number="1" data-total-pages="1" data-per-page="20">Page 1 of 1</nav> -->
 
 <form action="./messages" method="POST">
-  <legend>Post a new message to this topic</legend>
+  <legend>Post a new message to this discussion</legend>
   <textarea name="body" id="body" required></textarea>
   <input type="hidden" name="group-id" id="group-id" value="${group-id}"/>
-  <input type="hidden" name="topic-id" id="topic-id" value="${topic-id}"/>
+  <input type="hidden" name="discussion-id" id="discussion-id" value="${discussion-id}"/>
   <button type="submit">Post Message</button>
 </form>
 

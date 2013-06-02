@@ -12,9 +12,9 @@
   ([context group]
    (merge context
           {:group-id (:_id group) :group-name (:name group)}))
-  ([context group topic]
+  ([context group discussion]
    (merge (combine context group)
-          {:topic-id (:_id topic) :topic-name (:name topic)})))
+          {:discussion-id (:_id discussion) :discussion-name (:name discussion)})))
 
 (defn ^:private indexed
   "Returns a lazy sequence of [index, item] pairs, where items come
@@ -44,37 +44,37 @@
 (h/deftemplate a-group "templates/a_group.html"
   [context group]
   [:html h/text-node] (h/replace-vars (combine context group))
-  [:a#topics] (h/set-attr :href (str "/groups/" (:_id group) "/topics")))
+  [:a#discussions] (h/set-attr :href (str "/groups/" (:_id group) "/discussions")))
 
-(h/deftemplate topics "templates/topics.html"
-  [context group topics]
+(h/deftemplate discussions "templates/discussions.html"
+  [context group discussions]
   [:html h/text-node] (h/replace-vars (combine context group))
-  [:ul#topics :li] (h/clone-for [topic topics]
+  [:ul#discussions :li] (h/clone-for [discussion discussions]
                      [:a] (h/do->
-                            (h/set-attr :href (str "/groups/" (:_id group) "/topics/" (:_id topic)))
-                            (h/content (:name topic))))
+                            (h/set-attr :href (str "/groups/" (:_id group) "/discussions/" (:_id discussion)))
+                            (h/content (:name discussion))))
   [:a#group] (attr-append :href str (:_id group))
   [:input#group-id] (h/set-attr :value (:_id group)))
 
-(h/deftemplate a-topic "templates/a_topic.html"
-  [context group topic]
-  [:html h/text-node] (h/replace-vars (assoc (combine context group topic)
+(h/deftemplate a-discussion "templates/a_discussion.html"
+  [context group discussion]
+  [:html h/text-node] (h/replace-vars (assoc (combine context group discussion)
                                              ;; TODO: TEMP HARD-CODED VALUE
                                              :message-count "2"))
   [:a#group] (attr-append :href str (:_id group))
   ;; TODO: instead of building the URLs entirely here in the code, it’d be better to have a version of
   ;; replace-vars which can replace vars in an attribute.
-  [:a#topics] (h/set-attr :href (str "/groups/" (:_id group) "/topics"))
-  [:a#messages] (h/set-attr :href (str "/groups/" (:_id group) "/topics/" (:_id topic) "/messages")))
+  [:a#discussions] (h/set-attr :href (str "/groups/" (:_id group) "/discussions"))
+  [:a#messages] (h/set-attr :href (str "/groups/" (:_id group) "/discussions/" (:_id discussion) "/messages")))
 
 (h/deftemplate messages "templates/messages.html"
-  [context group topic messages]
-  [:html h/text-node] (h/replace-vars (combine context group topic))
+  [context group discussion messages]
+  [:html h/text-node] (h/replace-vars (combine context group discussion))
   [:a#group] (attr-append :href str (:_id group))
-  [:a#topics] (h/set-attr :href (str "/groups/" (:_id group) "/topics"))
-  [:a#topic] (h/set-attr :href (str "/groups/" (:_id group) "/topics/" (:_id topic)))
+  [:a#discussions] (h/set-attr :href (str "/groups/" (:_id group) "/discussions"))
+  [:a#discussion] (h/set-attr :href (str "/groups/" (:_id group) "/discussions/" (:_id discussion)))
   [:input#group-id] (h/set-attr :value (:_id group))
-  [:input#topic-id] (h/set-attr :value (:_id topic))
+  [:input#discussion-id] (h/set-attr :value (:_id discussion))
   [:article.message] (h/clone-for [[i message] (indexed messages 1)]
                        [:a#user] (h/do->
                                    (h/set-attr :href (str "/people/" (get-in message [:user :id])))
@@ -82,16 +82,16 @@
                        [:pre] (h/content (:body message))
                        [:#date] (h/content (:created message))
                        [:#message-number] (h/content (str i))
-                       [:a#message] (h/set-attr :href (str "/groups/" (:_id group) "/topics/" (:_id topic) "/messages/" (:_id message)))))
+                       [:a#message] (h/set-attr :href (str "/groups/" (:_id group) "/discussions/" (:_id discussion) "/messages/" (:_id message)))))
 
 (h/deftemplate a-message "templates/a_message.html"
-  [context group topic message]
-  [:html h/text-node] (h/replace-vars (combine context group topic))
+  [context group discussion message]
+  [:html h/text-node] (h/replace-vars (combine context group discussion))
   [:span.message-id] (h/content (:message-id context))
   [:a#group] (attr-append :href str (:_id group))
-  [:a#topics] (h/set-attr :href (str "/groups/" (:_id group) "/topics"))
-  [:a#topic] (h/set-attr :href (str "/groups/" (:_id group) "/topics/" (:_id topic)))
-  [:a#messages] (h/set-attr :href (str "/groups/" (:_id group) "/topics/" (:_id topic) "/messages"))
+  [:a#discussions] (h/set-attr :href (str "/groups/" (:_id group) "/discussions"))
+  [:a#discussion] (h/set-attr :href (str "/groups/" (:_id group) "/discussions/" (:_id discussion)))
+  [:a#messages] (h/set-attr :href (str "/groups/" (:_id group) "/discussions/" (:_id discussion) "/messages"))
   [:article :pre] (h/content (:body message))
   [:#username] (h/content (get-in message [:user :name]))
   [:a#user] (h/do->

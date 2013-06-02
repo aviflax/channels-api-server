@@ -6,11 +6,11 @@
     "groups": {
       "map": "function(doc) {\n  if (doc.type == \"group\")\n    emit(null, doc.name);\n}"
     },
-    "topics": {
-      "map": "function(doc) {\n  if (doc.type == \"topic\")\n    emit(doc.group.id, doc.name);\n}"
+    "discussions": {
+      "map": "function(doc) {\n  if (doc.type == \"discussion\")\n    emit(doc.group.id, doc.name);\n}"
     },
     "messages": {
-      "map": "function(doc) {\n  if (doc.type == \"message\")\n    emit(doc.topic.id, doc.body);\n}"
+      "map": "function(doc) {\n  if (doc.type == \"message\")\n    emit(doc.discussion.id, doc.body);\n}"
     }
   }
 }

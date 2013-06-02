@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>${server-name} » ${group-name} » Topics</title>
+    <title>${server-name} » ${group-name} » Discussions</title>
 </head>
 <body>
 
@@ -12,20 +12,20 @@
       <a href="/">${server-name}</a>
       » <a href="/groups">Groups</a>
       » <a id="group" href="/groups/">${group-name}</a>
-      » Topics
+      » Discussions
     </nav>
   </h1>
 </header>
 
-<ul id="topics">
-  <li><a href="/groups/${group-id}/topics/${topic-id}">Some topic</a></li>
+<ul id="discussions">
+  <li><a href="/groups/${group-id}/discussions/${discussion-id}">Some discussion</a></li>
 </ul>
 
-<form action="./topics" method="POST">
-  <legend>Create a new topic</legend>
+<form action="./discussions" method="POST">
+  <legend>Create a new discussion</legend>
   <input type="text" name="name" id="name" required>
   <input type="hidden" name="group-id" id="group-id" value="${group-id}"/>
-  <button type="submit">Create Topic</button>
+  <button type="submit">Create Discussion</button>
 </form>
 
 </body>
