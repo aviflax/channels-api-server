@@ -2,29 +2,28 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>${server-name} » All@Arc » VPN Issues » Message ${message-id} from Joel Potischman</title>
+    <title>${server-name} » ${group-name} » ${topic-name} » Message {message-id} from Joel Potischman</title>
 </head>
 <body>
 
 <header>
   <h1>
     <nav>
-      <a href="/"><span class="server-name">${server-name}</span></a>
+      <a href="/">${server-name}</a>
       » <a href="/groups">Groups</a>
-      » <a href="/groups/all-at-arc">All@Arc</a>
-      » <a href="/groups/all-at-arc/topics">Topics</a>
-      » <a href="/groups/all-at-arc/topics/vpn-issues">VPN Issues</a>
-      » <a href="/groups/all-at-arc/topics/vpn-issues">Messages</a>
-      » Message <span class="message-id">{{message_id}}</span> from Joel Potischman
+      » <a id="group" href="/groups/">${group-name}</a>
+      » <a id="topics" href="/groups/${group-id}/topics">Topics</a>
+      » <a id="topic" href="/groups/all-at-arc/topics/vpn-issues">${topic-name}</a>
+      » <a id="messages" href="/groups/all-at-arc/topics/vpn-issues">Messages</a>
+      » Message from <span id="username">Joel Potischman</span> on <span class="message-date">2013-06-02T19:30:47Z</span>
     </nav>
   </h1>
 </header>
 
 <article class="message">
   <header>
-    <section><a href="/groups/all-at-arc/topics/vpn-issues/messages/1">Message <span class="message-id">{{message_id}}</span></a></section>
-    <section>From: <a href="/people/joel-potischman">Joel Potischman</a></section>
-    <section>Date: Friday, 12 April, 2013 at 11:21</section>
+    <section>From: <a id="user" href="/people/joel-potischman">Joel Potischman</a></section>
+    <section>Date: <span class="message-date">2013-06-02T19:30:47Z</span></section>
   </header>
 
   <pre>
@@ -36,7 +35,7 @@
   </pre>
 </article>
 
-<nav><a href="./2" rel="next">Next Message</a></nav>
+<!-- TODO <nav><a href="./2" rel="next">Next Message</a></nav> -->
 
 </body>
 </html>

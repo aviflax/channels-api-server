@@ -24,3 +24,17 @@
 
 (defn get-messages [topic-id]
   (map :doc (couch/get-view db "api" :messages {:key topic-id :include_docs "true"})))
+
+(defn get-multi
+  "Accepts a sequence of IDs and returns a map of id to document."
+  [ids]
+  (map :doc
+       (couch/all-documents db {:include_docs true} {:keys ids})))
+
+(defn get-multi-map
+  "Accepts a sequence of IDs and returns a map of id to document."
+  [ids]
+  (->> (get-multi ids)
+       (map #(vector (:_id %) %))
+       flatten
+       (apply hash-map)))

@@ -82,9 +82,19 @@
                        [:pre] (h/content (:body message))
                        [:#date] (h/content (:created message))
                        [:#message-number] (h/content (str i))
-                       [:a#message] (h/set-attr :href (str "/groups/" (:_id group) "/topics/" (:_id topic) "/messages/" i))))
+                       [:a#message] (h/set-attr :href (str "/groups/" (:_id group) "/topics/" (:_id topic) "/messages/" (:_id message)))))
 
 (h/deftemplate a-message "templates/a_message.html"
   [context group topic message]
   [:html h/text-node] (h/replace-vars (combine context group topic))
-  [:span.message-id] (h/content (:message-id context)))
+  [:span.message-id] (h/content (:message-id context))
+  [:a#group] (attr-append :href str (:_id group))
+  [:a#topics] (h/set-attr :href (str "/groups/" (:_id group) "/topics"))
+  [:a#topic] (h/set-attr :href (str "/groups/" (:_id group) "/topics/" (:_id topic)))
+  [:a#messages] (h/set-attr :href (str "/groups/" (:_id group) "/topics/" (:_id topic) "/messages"))
+  [:article :pre] (h/content (:body message))
+  [:#username] (h/content (get-in message [:user :name]))
+  [:a#user] (h/do->
+              (h/set-attr :href (str "/people/" (get-in message [:user :id])))
+              (h/content (get-in message [:user :name])))
+  [:.message-date] (h/content (:created message)))

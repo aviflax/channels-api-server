@@ -57,8 +57,8 @@
     (t/messages context (db/get-doc group-id) (db/get-doc topic-id) (db/get-messages topic-id)))
 
   (GET "/groups/:group-id/topics/:topic-id/messages/:message-id"
-    {params :params}
-    (t/a-message (merge context params))))
+    [group-id topic-id message-id]
+    (apply t/a-message (concat [context] (db/get-multi [group-id topic-id message-id])))))
 
 (def ring-handler
   "this is a var so it can be used by lein-ring"
