@@ -6,9 +6,18 @@
             [ring.adapter.jetty :as ra]
             [clj-time.core :refer [now]]
             [slugger.core :refer [->slug]]
+            [clojure.string :refer [blank?]]
             [clj-time.format :refer [formatters unparse]]))
 
 (def context {:server-name "Avi’s R2"})
+
+(defn create-message-doc [group-id discussion-id body]
+  {:type "message"
+   :body body
+   :group {:id group-id}
+   :discussion {:id discussion-id}
+   :created (unparse (:date-time-no-ms formatters) (now))
+   :user {:id "avi-flax" :name "Avi Flax"}})
 
 (c/defroutes server
   (GET "/"
@@ -35,9 +44,13 @@
               (db/get-discussions (:group-id params))))
 
   (POST "/groups/:group-id/discussions"
-    [group-id name]
-    (db/new-doc! {:type "discussion" :name name :slug (->slug name) :group {:id group-id}})
-    (t/discussions context (db/get-doc group-id) (db/get-discussions group-id)))
+    {params :params, {:keys [group-id name]} :params}
+    (let [discussion-id (db/new-doc! {:type "discussion", :name name, :slug (->slug name), :group {:id group-id}})]
+      (when (and (contains? params :body)
+                 (not (blank? (:body params))))
+        ;; request contains body of initial message, so create that right now
+        (db/new-doc! (create-message-doc group-id discussion-id (:body params))))
+    (t/discussions context (db/get-doc group-id) (db/get-discussions group-id))))
 
   (GET "/groups/:group-id/discussions/:discussion-id"
     [group-id discussion-id]
@@ -49,12 +62,7 @@
 
   (POST "/groups/:group-id/discussions/:discussion-id/messages"
     [group-id discussion-id body]
-    (db/new-doc! {:type "message"
-                  :body body
-                  :group {:id group-id}
-                  :discussion {:id discussion-id}
-                  :created (unparse (:date-time-no-ms formatters) (now))
-                  :user {:id "avi-flax" :name "Avi Flax"}})
+    (db/new-doc! (create-message-doc group-id discussion-id body))
     (t/messages context (db/get-doc group-id) (db/get-doc discussion-id) (db/get-messages discussion-id)))
 
   (GET "/groups/:group-id/discussions/:discussion-id/messages/:message-id"

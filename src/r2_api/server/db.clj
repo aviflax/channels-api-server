@@ -12,7 +12,9 @@
 
 (defn new-doc!
   [doc]
-  (couch/assoc! db (str (java.util.UUID/randomUUID)) doc))
+  (let [id (str (java.util.UUID/randomUUID))]
+    (couch/assoc! db id doc)
+    id))
 
 (defn get-groups []
   (map #(hash-map :_id (:id %) :name (:value %))
