@@ -8,6 +8,7 @@
             [slugger.core :refer [->slug]]
             [clojure.string :refer [blank?]]
             [com.twinql.clojure.conneg :refer [best-allowed-content-type]]
+            [ring.middleware.json :refer [wrap-json-params]]
             [cheshire.core :as json]
             [clj-time.format :refer [formatters unparse]]))
 
@@ -28,16 +29,25 @@
    :created (unparse (:date-time-no-ms formatters) (now))
    :user {:id "avi-flax" :name "Avi Flax"}})
 
-(defn group-uri [group]
-  (str "/groups/" (:_id group)))
+(defn group-uri [group-id] (str "/groups/" group-id))
 
-(defn pretty-json [m]
-  (json/generate-string m {:pretty true}))
+(defn pretty-json [m] (json/generate-string m {:pretty true}))
 
 (defn groups-to-json [groups]
-  (pretty-json {:groups (map #(-> (assoc % :href (group-uri %))
+  (pretty-json {:groups (map #(-> (assoc % :href (group-uri (:_id %)))
                                   (dissoc ,,, :_id))
                              groups)}))
+
+(defn represent-groups [headers]
+  (condp = (select-accept-type (get headers "accept"))
+    :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (t/groups context (db/get-groups))}
+    :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (groups-to-json (db/get-groups))}
+    {:status 406 :body (str "Not Acceptable" (select-accept-type (get headers "accept")))}))
+
+(defn error-response [code message]
+  {:status code
+   :headers {"Content-Type" "text/plain;charset=UTF-8"}
+   :body message})
 
 (c/defroutes server
   (GET "/"
@@ -46,15 +56,19 @@
 
   (GET "/groups"
     {headers :headers}
-    (condp = (select-accept-type (get headers "accept"))
-      :html (t/groups context (db/get-groups))
-      :json {:headers {"Content-Type" "application/json"} :body (groups-to-json (db/get-groups))}
-      {:status 406 :body (str "Not Acceptable" (select-accept-type (get headers "accept")))}))
+    (represent-groups headers))
 
   (POST "/groups"
-    [name]
-    (db/new-doc! {:type "group" :name name :slug (->slug name)})
-    (t/groups context (db/get-groups)))
+    {headers :headers {name :name} :params}
+    (if (not (blank? name))
+        (let [group-id (db/new-doc! {:type "group", :name name, :slug (->slug name)})
+              response (represent-groups headers)]
+          (if (not (contains? response :status))
+              (-> response
+                  (assoc ,,, :status 201)
+                  (assoc-in ,,, [:headers "Location"] (group-uri group-id)))
+              response))
+        (error-response 400 "The request must include the parameter or property 'name'.")))
 
   (GET "/groups/:group-id"
     {params :params}
@@ -95,7 +109,7 @@
 (def ring-handler
   "this is a var so it can be used by lein-ring"
   (-> (ch/api server)
-
+      (wrap-json-params)
       ))
 
 (defn -main [& args]
