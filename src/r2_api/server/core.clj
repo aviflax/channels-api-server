@@ -7,9 +7,18 @@
             [clj-time.core :refer [now]]
             [slugger.core :refer [->slug]]
             [clojure.string :refer [blank?]]
+            [com.twinql.clojure.conneg :refer [best-allowed-content-type]]
+            [cheshire.core :as json]
             [clj-time.format :refer [formatters unparse]]))
 
 (def context {:server-name "Avi’s R2"})
+
+(def standard-content-types #{"application/json" "text/html"})
+
+(defn select-accept-type [accept-header]
+  (-> (best-allowed-content-type accept-header standard-content-types)
+      second
+      keyword))
 
 (defn create-message-doc [group-id discussion-id body]
   {:type "message"
@@ -19,14 +28,28 @@
    :created (unparse (:date-time-no-ms formatters) (now))
    :user {:id "avi-flax" :name "Avi Flax"}})
 
+(defn group-uri [group]
+  (str "/groups/" (:_id group)))
+
+(defn pretty-json [m]
+  (json/generate-string m {:pretty true}))
+
+(defn groups-to-json [groups]
+  (pretty-json {:groups (map #(-> (assoc % :href (group-uri %))
+                                  (dissoc ,,, :_id))
+                             groups)}))
+
 (c/defroutes server
   (GET "/"
     []
     (t/root context))
 
   (GET "/groups"
-    []
-    (t/groups context (db/get-groups)))
+    {headers :headers}
+    (condp = (select-accept-type (get headers "accept"))
+      :html (t/groups context (db/get-groups))
+      :json {:headers {"Content-Type" "application/json"} :body (groups-to-json (db/get-groups))}
+      {:status 406 :body (str "Not Acceptable" (select-accept-type (get headers "accept")))}))
 
   (POST "/groups"
     [name]
@@ -40,8 +63,8 @@
   (GET "/groups/:group-id/discussions"
     {params :params}
     (t/discussions (merge context params)
-              (db/get-doc (:group-id params))
-              (db/get-discussions (:group-id params))))
+                   (db/get-doc (:group-id params))
+                   (db/get-discussions (:group-id params))))
 
   (POST "/groups/:group-id/discussions"
     {params :params, {:keys [group-id name]} :params}
@@ -72,7 +95,7 @@
 (def ring-handler
   "this is a var so it can be used by lein-ring"
   (-> (ch/api server)
-      ;insert middleware here
+
       ))
 
 (defn -main [& args]
