@@ -24,6 +24,10 @@
 (defn acceptable? [acceptable-types accept-header]
   (boolean ((set acceptable-types) (select-accept-type accept-header))))
 
+(defn type-supported? [supported-types content-type-header]
+  (-> (some #(.contains content-type-header %) supported-types)
+      boolean))
+
 (defn create-message-doc [group-id discussion-id body]
   {:type "message"
    :body body
@@ -64,8 +68,7 @@
   (POST "/groups"
     {headers :headers {name :name} :params}
     (cond
-      (and (not (.contains (get headers "content-type") "application/json"))
-           (not (.contains (get headers "content-type") "application/x-www-form-urlencoded")))
+      (not (type-supported? ["application/json" "application/x-www-form-urlencoded"] (get headers "content-type")))
       (error-response 415 "The request representation must be of the type application/json or application/x-www-form-urlencoded.")
 
       (or (nil? name)
