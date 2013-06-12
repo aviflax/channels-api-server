@@ -7,8 +7,7 @@
       second
       keyword))
 
-(defn acceptable? [acceptable-types accept-header]
-  (boolean (select-accept-type acceptable-types accept-header)))
+(def acceptable? (comp boolean select-accept-type))
 
 (defn type-supported? [supported-types content-type-header]
   (-> (some #(.contains content-type-header %) supported-types)
