@@ -73,6 +73,9 @@
           (blank? name))
       (error-response 400 "The request must include the string parameter or property 'name', and it may not be null or blank.")
 
+      (not= (db/get-key-count :groups name) 0)
+      (error-response 409 "A group with the specified name already exists.")
+
       (not (acceptable? #{:html :json} (get headers "accept")))
       (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
 

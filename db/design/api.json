@@ -1,10 +1,11 @@
 {
   "_id": "_design/api",
-  "_rev": "4-b04137aded2fe0297c8a3fa83a436944",
+  "_rev": "9-66754b6ca552d2f740686d62051b9472",
   "language": "javascript",
   "views": {
     "groups": {
-      "map": "function(doc) {\n  if (doc.type == \"group\")\n    emit(null, doc.name);\n}"
+      "map": "function(doc) {\n  if (doc.type == \"group\")\n    emit(doc.name, 1);\n}",
+      "reduce": "function(keys, values, rereduce) {\n  return sum(values);\n}"
     },
     "discussions": {
       "map": "function(doc) {\n  if (doc.type == \"discussion\")\n    emit(doc.group.id, doc.name);\n}"

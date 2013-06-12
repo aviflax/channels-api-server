@@ -17,8 +17,8 @@
     id))
 
 (defn get-groups []
-  (map #(hash-map :_id (:id %) :name (:value %))
-       (couch/get-view db "api" :groups)))
+  (map #(hash-map :_id (:id %) :name (:key %))
+       (couch/get-view db "api" :groups {:reduce "false"})))
 
 (defn get-discussions [group-id]
   (map #(hash-map :_id (:id %) :name (:value %))
@@ -40,3 +40,10 @@
        (map #(vector (:_id %) %))
        flatten
        (apply hash-map)))
+
+(defn get-key-count
+  [view key-value]
+  (-> (couch/get-view db "api" view {:key key-value :group "true"})
+      first
+      :value
+      (or ,,, 0)))
