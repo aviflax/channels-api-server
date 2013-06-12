@@ -21,6 +21,9 @@
       second
       keyword))
 
+(defn acceptable? [acceptable-types accept-header]
+  (boolean ((set acceptable-types) (select-accept-type accept-header))))
+
 (defn create-message-doc [group-id discussion-id body]
   {:type "message"
    :body body
@@ -38,16 +41,16 @@
                                   (dissoc ,,, :_id))
                              groups)}))
 
-(defn represent-groups [headers]
-  (condp = (select-accept-type (get headers "accept"))
-    :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (t/groups context (db/get-groups))}
-    :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (groups-to-json (db/get-groups))}
-    {:status 406 :body (str "Not Acceptable" (select-accept-type (get headers "accept")))}))
-
 (defn error-response [code message]
   {:status code
    :headers {"Content-Type" "text/plain;charset=UTF-8"}
    :body message})
+
+(defn represent-groups [headers]
+  (condp = (select-accept-type (get headers "accept"))
+    :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (t/groups context (db/get-groups))}
+    :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (groups-to-json (db/get-groups))}
+    (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))
 
 (c/defroutes server
   (GET "/"
@@ -60,15 +63,24 @@
 
   (POST "/groups"
     {headers :headers {name :name} :params}
-    (if (not (blank? name))
-        (let [group-id (db/new-doc! {:type "group", :name name, :slug (->slug name)})
-              response (represent-groups headers)]
-          (if (not (contains? response :status))
-              (-> response
-                  (assoc ,,, :status 201)
-                  (assoc-in ,,, [:headers "Location"] (group-uri group-id)))
-              response))
-        (error-response 400 "The request must include the parameter or property 'name'.")))
+    (cond
+      (and (not (.contains (get headers "content-type") "application/json"))
+           (not (.contains (get headers "content-type") "application/x-www-form-urlencoded")))
+      (error-response 415 "The request representation must be of the type application/json or application/x-www-form-urlencoded.")
+
+      (or (nil? name)
+          (not (string? name))
+          (blank? name))
+      (error-response 400 "The request must include the string parameter or property 'name', and it may not be null or blank.")
+
+      (not (acceptable? #{:html :json} (get headers "accept")))
+      (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
+
+      :default
+      (let [group-id (db/new-doc! {:type "group", :name name, :slug (->slug name)})]
+        (-> (represent-groups headers)
+            (assoc ,,, :status 201)
+            (assoc-in ,,, [:headers "Location"] (group-uri group-id))))))
 
   (GET "/groups/:group-id"
     {params :params}
