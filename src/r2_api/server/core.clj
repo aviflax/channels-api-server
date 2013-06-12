@@ -1,5 +1,6 @@
 (ns r2-api.server.core
     (:require [r2-api.server.resources.groups :as groups]
+              [r2-api.server.resources.a-group :as a-group]
               [r2-api.server.templates :as t]
               [r2-api.server.db :as db]
               [compojure.core :as c :refer [GET PUT POST DELETE]]
@@ -29,9 +30,7 @@
 
   (groups/create-groups-resource-handler context)
 
-  (GET "/groups/:group-id"
-    {params :params}
-      (t/a-group (merge context params) (db/get-doc (:group-id params))))
+  (a-group/create-a-group-resource-handler context)
 
   (GET "/groups/:group-id/discussions"
     {params :params}
