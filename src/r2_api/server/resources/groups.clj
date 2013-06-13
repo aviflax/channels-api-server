@@ -31,7 +31,7 @@
    :created-date (unparse (:date-time-no-ms formatters) (now))
    :created-user {:id "avi-flax" :name "Avi Flax"}})
 
-(defn create-groups-resource-handler [context]
+(defn create-handler [context]
   (routes
     (GET "/groups"
       {headers :headers}

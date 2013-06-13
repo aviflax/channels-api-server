@@ -18,7 +18,7 @@
     :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (group-to-json (db/get-doc group-id))}
     (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))
 
-(defn create-a-group-resource-handler [context]
+(defn create-handler [context]
   (routes
     (GET "/groups/:group-id"
       {{group-id :group-id} :params

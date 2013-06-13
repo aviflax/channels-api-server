@@ -28,9 +28,6 @@
     []
     (t/root context))
 
-  (groups/create-groups-resource-handler context)
-
-  (a-group/create-a-group-resource-handler context)
 
   (GET "/groups/:group-id/discussions"
     {params :params}
@@ -46,6 +43,8 @@
         ;; request contains body of initial message, so create that right now
         (db/new-doc! (create-message-doc group-id discussion-id (:body params))))
     (t/discussions context (db/get-doc group-id) (db/get-discussions group-id))))
+  (groups/create-handler context)
+  (a-group/create-handler context)
 
   (GET "/groups/:group-id/discussions/:discussion-id"
     [group-id discussion-id]
