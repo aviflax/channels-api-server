@@ -24,13 +24,6 @@
     :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (groups-to-json (db/get-groups))}
     (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))
 
-(defn create-group-doc [name]
-  {:type "group"
-   :name name
-   :slug (->slug name)
-   :created-date (unparse (:date-time-no-ms formatters) (now))
-   :created-user {:id "avi-flax" :name "Avi Flax"}})
-
 (defn create-handler [context]
   (routes
     (GET "/groups"
@@ -55,7 +48,7 @@
         (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
 
         :default
-        (let [group-id (db/new-doc! (create-group-doc name))]
+        (let [group-id (db/new-doc! (db/create-group-doc name))]
           (-> (represent-groups headers context)
               (assoc ,,, :status 201)
               (assoc-in ,,, [:headers "Location"] (group-uri group-id))))))))

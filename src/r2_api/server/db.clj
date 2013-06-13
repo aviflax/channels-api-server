@@ -50,6 +50,13 @@
       :value
       (or ,,, 0)))
 
+(defn create-group-doc [name]
+  {:type "group"
+   :name name
+   :slug (->slug name)
+   :created-date (unparse (:date-time-no-ms formatters) (now))
+   :created-user {:id "avi-flax" :name "Avi Flax"}})
+
 (defn create-discussion-doc [name group-id]
   {:type "discussion"
    :name name
