@@ -11,24 +11,24 @@
 
 (defn group-uri [group-id] (str "/groups/" group-id))
 
-(defn groups-to-json [groups]
+(defn to-json [groups]
   (pretty-json {:groups (map #(-> (assoc % :href (group-uri (:_id %)))
                                   (dissoc ,,, :_id))
                              groups)}))
 
 (def acceptable-types #{"application/json" "text/html"})
 
-(defn represent-groups [headers context]
+(defn represent [headers context]
   (condp = (select-accept-type acceptable-types (get headers "accept"))
     :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (t/groups context (db/get-groups))}
-    :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (groups-to-json (db/get-groups))}
+    :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (to-json (db/get-groups))}
     (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))
 
 (defn create-handler [context]
   (routes
     (GET "/groups"
       {headers :headers}
-      (represent-groups headers context))
+      (represent headers context))
 
     (POST "/groups"
       {headers :headers {name :name} :params}
@@ -49,6 +49,6 @@
 
         :default
         (let [group-id (db/new-doc! (db/create-group-doc name))]
-          (-> (represent-groups headers context)
+          (-> (represent headers context)
               (assoc ,,, :status 201)
               (assoc-in ,,, [:headers "Location"] (group-uri group-id))))))))

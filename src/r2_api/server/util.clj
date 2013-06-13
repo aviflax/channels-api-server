@@ -19,3 +19,8 @@
   {:status code
    :headers {"Content-Type" "text/plain;charset=UTF-8"}
    :body message})
+
+(defn doc-to-json [m]
+  (-> (assoc m :id (:_id m))
+      (dissoc ,,, :_id :_rev)
+      pretty-json))
