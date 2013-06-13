@@ -1,5 +1,8 @@
 (ns r2-api.server.db
-  (:require [com.ashafa.clutch :as couch]))
+  (:require [com.ashafa.clutch :as couch]
+            [slugger.core :refer [->slug]]
+            [clj-time.core :refer [now]]
+            [clj-time.format :refer [formatters unparse]]))
 
 (def ^:private db (couch/couch "avis-r2"))
 
@@ -21,8 +24,7 @@
        (couch/get-view db "api" :groups {:reduce "false"})))
 
 (defn get-discussions [group-id]
-  (map #(hash-map :_id (:id %) :name (:value %))
-       (couch/get-view db "api" :discussions {:key group-id})))
+  (map :value (couch/get-view db "api" :discussions {:key group-id})))
 
 (defn get-messages [discussion-id]
   (map :doc (couch/get-view db "api" :messages {:key discussion-id :include_docs "true"})))
@@ -47,3 +49,19 @@
       first
       :value
       (or ,,, 0)))
+
+(defn create-discussion-doc [name group-id]
+  {:type "discussion"
+   :name name
+   :slug (->slug name)
+   :group {:id group-id}
+   :created-date (unparse (:date-time-no-ms formatters) (now))
+   :created-user {:id "avi-flax" :name "Avi Flax"}})
+
+(defn create-message-doc [group-id discussion-id body]
+  {:type "message"
+   :body body
+   :group {:id group-id}
+   :discussion {:id discussion-id}
+   :created (unparse (:date-time-no-ms formatters) (now))
+   :user {:id "avi-flax" :name "Avi Flax"}})
