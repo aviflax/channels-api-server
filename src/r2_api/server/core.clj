@@ -3,6 +3,7 @@
               [r2-api.server.resources.a-group :as a-group]
               [r2-api.server.resources.discussions :as discussions]
               [r2-api.server.resources.a-discussion :as a-discussion]
+              [r2-api.server.resources.messages :as messages]
               [r2-api.server.templates :as t]
               [r2-api.server.db :as db]
               [compojure.core :as c :refer [GET PUT POST DELETE]]
@@ -26,15 +27,7 @@
   (a-group/create-handler context)
   (discussions/create-handler context)
   (a-discussion/create-handler context)
-
-  (GET "/groups/:group-id/discussions/:discussion-id/messages"
-    [group-id discussion-id]
-    (t/messages context (db/get-doc group-id) (db/get-doc discussion-id) (db/get-messages discussion-id)))
-
-  (POST "/groups/:group-id/discussions/:discussion-id/messages"
-    [group-id discussion-id body]
-    (db/new-doc! (db/create-message-doc group-id discussion-id body))
-    (t/messages context (db/get-doc group-id) (db/get-doc discussion-id) (db/get-messages discussion-id)))
+  (messages/create-handler context)
 
   (GET "/groups/:group-id/discussions/:discussion-id/messages/:message-id"
     [group-id discussion-id message-id]
