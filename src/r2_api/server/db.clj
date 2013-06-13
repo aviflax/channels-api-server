@@ -30,7 +30,7 @@
   (map :doc (couch/get-view db "api" :messages {:key discussion-id :include_docs "true"})))
 
 (defn get-multi
-  "Accepts a sequence of IDs and returns a map of id to document."
+  "Accepts a sequence of IDs and returns a sequence of retrieved documents (as maps) in the same order as the provided IDs."
   [ids]
   (map :doc
        (couch/all-documents db {:include_docs true} {:keys ids})))
