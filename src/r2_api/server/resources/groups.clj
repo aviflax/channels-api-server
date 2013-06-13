@@ -13,7 +13,7 @@
 
 (defn to-json [groups]
   (pretty-json {:groups (map #(-> (assoc % :href (group-uri (:_id %)))
-                                  (dissoc ,,, :_id))
+                                  (dissoc ,,, :_id :_rev))
                              groups)}))
 
 (def acceptable-types #{"application/json" "text/html"})
