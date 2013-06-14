@@ -1,5 +1,5 @@
 (ns r2-api.server.resources.a-message
-  (:require [r2-api.server.util :refer [doc-to-json error-response pretty-json select-accept-type]]
+  (:require [r2-api.server.util :refer [doc-to-json error-response select-accept-type]]
             [compojure.core :refer [GET routes]]
             [r2-api.server.templates :as t]
             [r2-api.server.db :as db]))
