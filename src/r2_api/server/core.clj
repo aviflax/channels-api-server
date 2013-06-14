@@ -1,5 +1,6 @@
 (ns r2-api.server.core
-    (:require [r2-api.server.resources.groups :as groups]
+    (:require [r2-api.server.resources.root :as root]
+              [r2-api.server.resources.groups :as groups]
               [r2-api.server.resources.a-group :as a-group]
               [r2-api.server.resources.discussions :as discussions]
               [r2-api.server.resources.a-discussion :as a-discussion]
@@ -20,7 +21,7 @@
 (def ^:private context {:server-name "Avi’s R2"})
 
 (c/defroutes server
-  (GET "/" [] (t/root context))
+  (root/create-handler context)
   (groups/create-handler context)
   (a-group/create-handler context)
   (discussions/create-handler context)

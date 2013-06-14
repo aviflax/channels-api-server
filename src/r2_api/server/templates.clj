@@ -30,8 +30,12 @@
     (map vector (iterate inc start) s)))
 
 (h/deftemplate root "templates/root.html"
-  [context]
-  [:html h/text-node] (h/replace-vars context))
+  [context links]
+  [:html h/text-node] (h/replace-vars context)
+  [:nav :ul [:li (h/but h/first-child)]] :remove
+  [:nav :ul :li] (h/clone-for [link links]
+                              [:a] (h/do-> (h/set-attr :href (:href link))
+                                           (h/content (:text link)))))
 
 (h/deftemplate groups "templates/groups.html"
   [context groups]
