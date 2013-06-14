@@ -67,7 +67,7 @@
                                              :message-count "2"))
   [:a#group] (attr-append :href str (:_id group))
   ;; TODO: instead of building the URLs entirely here in the code, it’d be better to have a version of
-  ;; replace-vars which can replace vars in an attribute.
+  ;; replace-vars which can replace vars in an attribute, or to just call functions which build the URLs
   [:a#discussions] (h/set-attr :href (str "/groups/" (:_id group) "/discussions"))
   [:a#messages] (h/set-attr :href (str "/groups/" (:_id group) "/discussions/" (:_id discussion) "/messages")))
 
