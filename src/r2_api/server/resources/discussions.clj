@@ -6,10 +6,10 @@
             [clojure.string :refer [blank?]]
             [clojure.pprint :refer :all]))
 
-(defn discussion-uri [group-id discussion-id] (str "/groups/" group-id "/discussions/" discussion-id))
+(defn uri [group-id discussion-id] (str "/groups/" group-id "/discussions/" discussion-id))
 
 (defn to-json [discussions]
-  (pretty-json {:discussions (map #(-> (assoc % :href (discussion-uri (get-in % [:group :id]) (:_id %)))
+  (pretty-json {:discussions (map #(-> (assoc % :href (uri (get-in % [:group :id]) (:_id %)))
                                        (dissoc ,,, :_id :_rev :type))
                                   discussions)}))
 
@@ -53,4 +53,4 @@
             (db/new-doc! (db/create-message-doc group-id discussion-id (:body params))))
           (-> (represent (get headers "accept") group-id context)
               (assoc ,,, :status 201)
-              (assoc-in ,,, [:headers "Location"] (discussion-uri group-id discussion-id))))))))
+              (assoc-in ,,, [:headers "Location"] (uri group-id discussion-id))))))))

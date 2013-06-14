@@ -9,10 +9,10 @@
             [clojure.string :refer [blank?]]
             [clojure.pprint :refer :all]))
 
-(defn group-uri [group-id] (str "/groups/" group-id))
+(defn uri [group-id] (str "/groups/" group-id))
 
 (defn to-json [groups]
-  (pretty-json {:groups (map #(-> (assoc % :href (group-uri (:_id %)))
+  (pretty-json {:groups (map #(-> (assoc % :href (uri (:_id %)))
                                   (dissoc ,,, :_id :_rev :type))
                              groups)}))
 
@@ -51,4 +51,4 @@
         (let [group-id (db/new-doc! (db/create-group-doc name))]
           (-> (represent headers context)
               (assoc ,,, :status 201)
-              (assoc-in ,,, [:headers "Location"] (group-uri group-id))))))))
+              (assoc-in ,,, [:headers "Location"] (uri group-id))))))))
