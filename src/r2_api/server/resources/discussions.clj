@@ -10,7 +10,7 @@
 
 (defn to-json [discussions]
   (pretty-json {:discussions (map #(-> (assoc % :href (discussion-uri (get-in % [:group :id]) (:_id %)))
-                                       (dissoc ,,, :_id :_rev))
+                                       (dissoc ,,, :_id :_rev :type))
                                   discussions)}))
 
 (def acceptable-types #{"application/json" "text/html"})

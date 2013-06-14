@@ -22,5 +22,5 @@
 
 (defn doc-to-json [m]
   (-> (assoc m :id (:_id m))
-      (dissoc ,,, :_id :_rev)
+      (dissoc ,,, :_id :_rev :type)
       pretty-json))
