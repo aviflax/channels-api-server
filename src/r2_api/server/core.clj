@@ -4,6 +4,7 @@
               [r2-api.server.resources.discussions :as discussions]
               [r2-api.server.resources.a-discussion :as a-discussion]
               [r2-api.server.resources.messages :as messages]
+              [r2-api.server.resources.a-message :as a-message]
               [r2-api.server.templates :as t]
               [r2-api.server.db :as db]
               [compojure.core :as c :refer [GET PUT POST DELETE]]
@@ -19,19 +20,13 @@
 (def ^:private context {:server-name "Avi’s R2"})
 
 (c/defroutes server
-  (GET "/"
-    []
-    (t/root context))
-
+  (GET "/" [] (t/root context))
   (groups/create-handler context)
   (a-group/create-handler context)
   (discussions/create-handler context)
   (a-discussion/create-handler context)
   (messages/create-handler context)
-
-  (GET "/groups/:group-id/discussions/:discussion-id/messages/:message-id"
-    [group-id discussion-id message-id]
-    (apply t/a-message (concat [context] (db/get-multi [group-id discussion-id message-id])))))
+  (a-message/create-handler context))
 
 (def ring-handler
   "this is a var so it can be used by lein-ring"
