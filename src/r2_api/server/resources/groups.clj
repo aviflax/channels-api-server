@@ -25,30 +25,31 @@
     (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))
 
 (defn create-handler [context]
-  (routes
-    (GET "/groups"
-      {headers :headers}
-      (represent headers context))
+  (let [path "/groups"]
+    (routes
+      (GET path
+        {headers :headers}
+        (represent headers context))
 
-    (POST "/groups"
-      {headers :headers {name :name} :params}
-      (cond
-        (not (type-supported? ["application/json" "application/x-www-form-urlencoded"] (get headers "content-type")))
-        (error-response 415 "The request representation must be of the type application/json or application/x-www-form-urlencoded.")
+      (POST path
+        {headers :headers {name :name} :params}
+        (cond
+          (not (type-supported? ["application/json" "application/x-www-form-urlencoded"] (get headers "content-type")))
+          (error-response 415 "The request representation must be of the type application/json or application/x-www-form-urlencoded.")
 
-        (or (nil? name)
-            (not (string? name))
-            (blank? name))
-        (error-response 400 "The request must include the string parameter or property 'name', and it may not be null or blank.")
+          (or (nil? name)
+              (not (string? name))
+              (blank? name))
+          (error-response 400 "The request must include the string parameter or property 'name', and it may not be null or blank.")
 
-        (not= (db/get-key-count :groups name) 0)
-        (error-response 409 "A group with the specified name already exists.")
+          (not= (db/get-key-count :groups name) 0)
+          (error-response 409 "A group with the specified name already exists.")
 
-        (not (acceptable? acceptable-types (get headers "accept")))
-        (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
+          (not (acceptable? acceptable-types (get headers "accept")))
+          (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
 
-        :default
-        (let [group-id (db/new-doc! (db/create-group-doc name))]
-          (-> (represent headers context)
-              (assoc ,,, :status 201)
-              (assoc-in ,,, [:headers "Location"] (uri group-id))))))))
+          :default
+          (let [group-id (db/new-doc! (db/create-group-doc name))]
+            (-> (represent headers context)
+                (assoc ,,, :status 201)
+                (assoc-in ,,, [:headers "Location"] (uri group-id)))))))))

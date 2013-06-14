@@ -23,34 +23,35 @@
     (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))
 
 (defn create-handler [context]
-  (routes
-    (GET "/groups/:group-id/discussions"
-      {{group-id :group-id} :params
-       {accept-header "accept"} :headers}
-      (represent accept-header group-id context))
+  (let [path "/groups/:group-id/discussions"]
+    (routes
+      (GET path
+        {{group-id :group-id} :params
+         {accept-header "accept"} :headers}
+        (represent accept-header group-id context))
 
-    (POST "/groups/:group-id/discussions"
-      {headers :headers
-       {:keys [group-id name] :as params} :params}
-      (cond
-        (not (type-supported? ["application/json" "application/x-www-form-urlencoded"] (get headers "content-type")))
-        (error-response 415 "The request representation must be of the type application/json or application/x-www-form-urlencoded.")
+      (POST path
+        {headers :headers
+         {:keys [group-id name] :as params} :params}
+        (cond
+          (not (type-supported? ["application/json" "application/x-www-form-urlencoded"] (get headers "content-type")))
+          (error-response 415 "The request representation must be of the type application/json or application/x-www-form-urlencoded.")
 
-        (or (nil? name)
-            (not (string? name))
-            (blank? name))
-        (error-response 400 "The request must include the string parameter or property 'name', and it may not be null or blank.")
+          (or (nil? name)
+              (not (string? name))
+              (blank? name))
+          (error-response 400 "The request must include the string parameter or property 'name', and it may not be null or blank.")
 
-        (not (acceptable? acceptable-types (get headers "accept")))
-        (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
+          (not (acceptable? acceptable-types (get headers "accept")))
+          (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
 
-        :default
-        (let [discussion-id (db/new-doc! (db/create-discussion-doc name group-id))]
-          (when (and (contains? params :body)
-                     (string? (:body params))
-                     (not (blank? (:body params))))
-            ;; request contains body of initial message, so create that right now
-            (db/new-doc! (db/create-message-doc group-id discussion-id (:body params))))
-          (-> (represent (get headers "accept") group-id context)
-              (assoc ,,, :status 201)
-              (assoc-in ,,, [:headers "Location"] (uri group-id discussion-id))))))))
+          :default
+          (let [discussion-id (db/new-doc! (db/create-discussion-doc name group-id))]
+            (when (and (contains? params :body)
+                       (string? (:body params))
+                       (not (blank? (:body params))))
+              ;; request contains body of initial message, so create that right now
+              (db/new-doc! (db/create-message-doc group-id discussion-id (:body params))))
+            (-> (represent (get headers "accept") group-id context)
+                (assoc ,,, :status 201)
+                (assoc-in ,,, [:headers "Location"] (uri group-id discussion-id)))))))))
