@@ -8,19 +8,20 @@
               [r2-api.server.resources.a-message :as a-message]
               [r2-api.server.templates :as t]
               [r2-api.server.db :as db]
-              [compojure.core :as c :refer [GET PUT POST DELETE]]
+              [compojure.core :refer [defroutes]]
               [compojure.handler :as ch]
-              [ring.adapter.jetty :as ra]
+              [ring.adapter.jetty :as rj]
               [clj-time.core :refer [now]]
               [slugger.core :refer [->slug]]
               [clojure.string :refer [blank?]]
               [ring.middleware.json :refer [wrap-json-params]]
+              [ring.middleware.head :refer [wrap-head]]
               [cheshire.core :as json]
               [clj-time.format :refer [formatters unparse]]))
 
 (def ^:private context {:server-name "Avi’s R2"})
 
-(c/defroutes server
+(defroutes routes
   (root/create-handler context)
   (groups/create-handler context)
   (a-group/create-handler context)
@@ -31,10 +32,11 @@
 
 (def ring-handler
   "this is a var so it can be used by lein-ring"
-  (-> (ch/api server)
-      (wrap-json-params)
-      ))
+  (-> (ch/api routes)
+      wrap-json-params
+      ;; TODO: there appears to be a bug in wrap-head such that Content-Length gets set to 0
+      wrap-head))
 
 (defn -main [& args]
   (println "starting Web server")
-  (ra/run-jetty ring-handler {:port 3000 :join? false}))
+  (rj/run-jetty ring-handler {:port 3000 :join? false}))
