@@ -1,5 +1,6 @@
 (ns r2-api.server.resources.groups
-  (:require [r2-api.server.util :refer [acceptable? error-response pretty-json select-accept-type type-supported?]]
+  (:require [r2-api.server.resources.a-group :refer [uri]]
+            [r2-api.server.util :refer [acceptable? error-response pretty-json select-accept-type type-supported?]]
             [compojure.core :refer [GET POST routes]]
             [net.cgrand.enlive-html :as h]
             [r2-api.server.db :as db]
@@ -8,8 +9,6 @@
             [slugger.core :refer [->slug]]
             [clojure.string :refer [blank?]]
             [clojure.pprint :refer :all]))
-
-(defn uri [group-id] (str "/groups/" group-id))
 
 (defn to-json [groups]
   (pretty-json {:groups (map #(-> (assoc % :href (uri (:_id %)))
@@ -23,9 +22,8 @@
   [:html h/text-node] (h/replace-vars context)
   [:ul#groups :li] (h/clone-for [group groups]
                      [:a] (h/do->
-                            (h/set-attr :href (str "/groups/" (:_id group)))
+                            (h/set-attr :href (uri (:_id group)))
                             (h/content (:name group)))))
-
 
 (defn represent [headers context]
   (condp = (select-accept-type acceptable-types (get headers "accept"))

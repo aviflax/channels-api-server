@@ -1,12 +1,11 @@
 (ns r2-api.server.resources.discussions
-  (:require [r2-api.server.util :refer [acceptable? attr-append combine error-response pretty-json select-accept-type type-supported?]]
+  (:require [r2-api.server.resources.a-discussion :refer [uri]]
+            [r2-api.server.util :refer [acceptable? attr-append combine error-response pretty-json select-accept-type type-supported?]]
             [compojure.core :refer [GET POST routes]]
             [net.cgrand.enlive-html :as h]
             [r2-api.server.db :as db]
             [clojure.string :refer [blank?]]
             [clojure.pprint :refer :all]))
-
-(defn uri [group-id discussion-id] (str "/groups/" group-id "/discussions/" discussion-id))
 
 (defn to-json [discussions]
   (pretty-json {:discussions (map #(-> (assoc % :href (uri (get-in % [:group :id]) (:_id %)))
@@ -20,7 +19,7 @@
   [:html h/text-node] (h/replace-vars (combine context group))
   [:ul#discussions :li] (h/clone-for [discussion discussions]
                      [:a] (h/do->
-                            (h/set-attr :href (str "/groups/" (:_id group) "/discussions/" (:_id discussion)))
+                            (h/set-attr :href (uri (:_id group) (:_id discussion)))
                             (h/content (:name discussion))))
   [:a#group] (attr-append :href str (:_id group))
   [:input#group-id] (h/set-attr :value (:_id group)))

@@ -1,12 +1,11 @@
 (ns r2-api.server.resources.messages
-  (:require [r2-api.server.util :refer [acceptable? attr-append combine error-response indexed pretty-json select-accept-type type-supported?]]
+  (:require [r2-api.server.resources.a-message :refer [uri]]
+            [r2-api.server.util :refer [acceptable? attr-append combine error-response indexed pretty-json select-accept-type type-supported?]]
             [compojure.core :refer [GET POST routes]]
             [net.cgrand.enlive-html :as h]
             [r2-api.server.db :as db]
             [clojure.string :refer [blank?]]
             [clojure.pprint :refer :all]))
-
-(defn uri [group-id discussion-id message-id] (str "/groups/" group-id "/discussions/" discussion-id "/messages/" message-id))
 
 (defn to-json [messages]
   (pretty-json {:messages (map #(-> (assoc % :href (uri (get-in % [:group :id]) (get-in % [:discussion :id]) (:_id %)))
@@ -30,7 +29,7 @@
                        [:pre] (h/content (:body message))
                        [:#date] (h/content (:created message))
                        [:#message-number] (h/content (str i))
-                       [:a#message] (h/set-attr :href (str "/groups/" (:_id group) "/discussions/" (:_id discussion) "/messages/" (:_id message)))))
+                       [:a#message] (h/set-attr :href (apply uri (map :_id [group discussion message])))))
 
 
 (defn represent [accept-header group-id discussion-id context]
