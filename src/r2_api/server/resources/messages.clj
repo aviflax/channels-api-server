@@ -1,7 +1,7 @@
 (ns r2-api.server.resources.messages
-  (:require [r2-api.server.util :refer [acceptable? error-response pretty-json select-accept-type type-supported?]]
+  (:require [r2-api.server.util :refer [acceptable? attr-append combine error-response indexed pretty-json select-accept-type type-supported?]]
             [compojure.core :refer [GET POST routes]]
-            [r2-api.server.templates :as t]
+            [net.cgrand.enlive-html :as h]
             [r2-api.server.db :as db]
             [clojure.string :refer [blank?]]
             [clojure.pprint :refer :all]))
@@ -15,9 +15,27 @@
 
 (def acceptable-types #{"application/json" "text/html"})
 
+(h/deftemplate html-template "templates/messages.html"
+  [context group discussion messages]
+  [:html h/text-node] (h/replace-vars (combine context group discussion))
+  [:a#group] (attr-append :href str (:_id group))
+  [:a#discussions] (h/set-attr :href (str "/groups/" (:_id group) "/discussions"))
+  [:a#discussion] (h/set-attr :href (str "/groups/" (:_id group) "/discussions/" (:_id discussion)))
+  [:input#group-id] (h/set-attr :value (:_id group))
+  [:input#discussion-id] (h/set-attr :value (:_id discussion))
+  [:article.message] (h/clone-for [[i message] (indexed messages 1)]
+                       [:a#user] (h/do->
+                                   (h/set-attr :href (str "/people/" (get-in message [:user :id])))
+                                   (h/content (get-in message [:user :name])))
+                       [:pre] (h/content (:body message))
+                       [:#date] (h/content (:created message))
+                       [:#message-number] (h/content (str i))
+                       [:a#message] (h/set-attr :href (str "/groups/" (:_id group) "/discussions/" (:_id discussion) "/messages/" (:_id message)))))
+
+
 (defn represent [accept-header group-id discussion-id context]
   (condp = (select-accept-type acceptable-types accept-header)
-    :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (t/messages context (db/get-doc group-id)
+    :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (html-template context (db/get-doc group-id)
                                                                                          (db/get-doc discussion-id)
                                                                                          (db/get-messages discussion-id))}
     :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (to-json (db/get-messages discussion-id))}

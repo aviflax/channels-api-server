@@ -1,15 +1,30 @@
 (ns r2-api.server.resources.a-message
-  (:require [r2-api.server.util :refer [doc-to-json error-response select-accept-type]]
+  (:require [r2-api.server.util :refer [attr-append combine doc-to-json error-response select-accept-type]]
             [compojure.core :refer [GET routes]]
-            [r2-api.server.templates :as t]
+            [net.cgrand.enlive-html :as h]
             [r2-api.server.db :as db]))
 
 (def acceptable-types #{"application/json" "text/html"})
 
+(h/deftemplate html-template "templates/a_message.html"
+  [context group discussion message]
+  [:html h/text-node] (h/replace-vars (combine context group discussion))
+  [:span.message-id] (h/content (:message-id context))
+  [:a#group] (attr-append :href str (:_id group))
+  [:a#discussions] (h/set-attr :href (str "/groups/" (:_id group) "/discussions"))
+  [:a#discussion] (h/set-attr :href (str "/groups/" (:_id group) "/discussions/" (:_id discussion)))
+  [:a#messages] (h/set-attr :href (str "/groups/" (:_id group) "/discussions/" (:_id discussion) "/messages"))
+  [:article :pre] (h/content (:body message))
+  [:#username] (h/content (get-in message [:user :name]))
+  [:a#user] (h/do->
+              (h/set-attr :href (str "/people/" (get-in message [:user :id])))
+              (h/content (get-in message [:user :name])))
+  [:.message-date] (h/content (:created message)))
+
 (defn represent [accept-header group-id discussion-id message-id context]
   (condp = (select-accept-type acceptable-types accept-header)
     :html {:headers {"Content-Type" "text/html;charset=UTF-8"}
-           :body (apply t/a-message (concat [context] (db/get-multi [group-id discussion-id message-id])))}
+           :body (apply html-template (concat [context] (db/get-multi [group-id discussion-id message-id])))}
     :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (doc-to-json (db/get-doc message-id))}
     (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))
 
