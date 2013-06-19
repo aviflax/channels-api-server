@@ -25,7 +25,7 @@
   [:input#group-id] (h/set-attr :value (:_id group)))
 
 (defn represent [accept-header group-id context]
-  (condp = (select-accept-type acceptable-types accept-header)
+  (case (select-accept-type acceptable-types accept-header)
     :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (html-template context (db/get-doc group-id)
                                                                                             (db/get-discussions group-id))}
     :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (to-json (db/get-discussions group-id))}

@@ -26,7 +26,7 @@
                             (h/content (:name group)))))
 
 (defn represent [headers context]
-  (condp = (select-accept-type acceptable-types (get headers "accept"))
+  (case (select-accept-type acceptable-types (get headers "accept"))
     :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (html-template context (db/get-groups))}
     :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (to-json (db/get-groups))}
     (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))
