@@ -16,6 +16,8 @@
 
 (def acceptable-types #{"application/json" "text/html"})
 
+(defn uri [group-id] (str "/groups/" group-id "/discussions"))
+
 (h/deftemplate html-template "templates/discussions.html"
   [context group discussions]
   [:html h/text-node] (h/replace-vars (combine context group))

@@ -1,5 +1,6 @@
 (ns r2-api.server.resources.a-group
   (:require [r2-api.server.util :refer [combine doc-to-json error-response select-accept-type]]
+            [r2-api.server.resources.discussions :as discussions]
             [compojure.core :refer [GET routes]]
             [net.cgrand.enlive-html :as h]
             [r2-api.server.db :as db]))
@@ -11,7 +12,7 @@
 (h/deftemplate html-template "templates/a_group.html"
   [context group]
   [:html h/text-node] (h/replace-vars (combine context group))
-  [:a#discussions] (h/set-attr :href (str "/groups/" (:_id group) "/discussions")))
+  [:a#discussions] (h/set-attr :href (discussions/uri (:_id group))))
 
 (defn represent [accept-header group-id context]
   (case (select-accept-type acceptable-types accept-header)
