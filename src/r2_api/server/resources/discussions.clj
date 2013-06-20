@@ -9,6 +9,11 @@
 
 (defn to-json [group discussions]
   (-> {:discussions (map #(-> (assoc % :href (a-discussion/uri (get-in % [:group :id]) (:_id %))
+                                       :id (:_id %)
+                                       ; TODO: hard-coded
+                                       :key-participants [{:name "Avi Flax" :href "/people/avi-flax"}]
+                                       ; TODO: hard-coded
+                                       :new-messages 23)
                               (dissoc ,,, :_id :_rev :type :group))
                          discussions)}
       (assoc ,,, :group (doc-for-json group))
