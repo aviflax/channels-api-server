@@ -1,5 +1,6 @@
 (ns r2-api.server.util
   (:require [cheshire.core :as json]
+            [clojure.string :refer [replace]]
             [com.twinql.clojure.conneg :refer [best-allowed-content-type]]))
 
 (defn select-accept-type [acceptable-types accept-header]
@@ -13,7 +14,9 @@
   (-> (some #(.contains content-type-header %) supported-types)
       boolean))
 
-(defn pretty-json [m] (json/generate-string m {:pretty true}))
+(defn pretty-json [v]
+  (json/generate-string v {:pretty true
+                           :key-fn #(replace (name %) \_ \-)}))
 
 (defn error-response [code message]
   {:status code
