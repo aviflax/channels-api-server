@@ -24,7 +24,7 @@
   [:.message-date] (h/content (:created message)))
 
 (defn represent [accept-header group-id discussion-id message-id context]
-  (condp = (select-accept-type acceptable-types accept-header)
+  (case (select-accept-type acceptable-types accept-header)
     :html {:headers {"Content-Type" "text/html;charset=UTF-8"}
            :body (apply html-template (concat [context] (db/get-multi [group-id discussion-id message-id])))}
     :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (doc-to-json (db/get-doc message-id))}

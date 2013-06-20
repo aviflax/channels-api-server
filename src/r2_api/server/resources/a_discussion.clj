@@ -20,7 +20,7 @@
   [:a#messages] (h/set-attr :href (str "/groups/" (:_id group) "/discussions/" (:_id discussion) "/messages")))
 
 (defn represent [accept-header group-id discussion-id context]
-  (condp = (select-accept-type acceptable-types accept-header)
+  (case (select-accept-type acceptable-types accept-header)
     :html {:headers {"Content-Type" "text/html;charset=UTF-8"}
            :body (let [[group discussion] (db/get-multi [group-id discussion-id])]
                    (html-template context group discussion))}
