@@ -30,9 +30,15 @@
   (messages/create-handler context)
   (a-message/create-handler context))
 
+(defn wrap-cors [handler]
+  (fn [request]
+    (let [response (handler request)]
+      (assoc-in response [:headers "Access-Control-Allow-Origin"] "*"))))
+
 (def ring-handler
   "this is a var so it can be used by lein-ring"
   (-> (ch/api routes)
+      wrap-cors
       wrap-json-params
       ;; TODO: there appears to be a bug in wrap-head such that Content-Length gets set to 0
       wrap-head))
