@@ -14,10 +14,10 @@
   [:html h/text-node] (h/replace-vars (combine context group))
   [:a#discussions] (h/set-attr :href (discussions/uri (:_id group))))
 
-(defn represent [accept-header group-id context]
+(defn represent [accept-header group context]
   (case (select-accept-type acceptable-types accept-header)
-    :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (html-template context (db/get-doc group-id))}
-    :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (doc-to-json (db/get-doc group-id))}
+    :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (html-template context group)}
+    :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (doc-to-json group)}
     (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))
 
 (defn create-handler [context]
@@ -25,4 +25,10 @@
     (GET "/groups/:group-id"
       {{group-id :group-id} :params
        {accept-header "accept"} :headers}
-      (represent accept-header group-id context))))
+      (let [group (db/get-doc group-id)]
+        (cond
+          (nil? group)
+          (error-response 404 "Not found.")
+
+          :default
+          (represent accept-header group context))))))
