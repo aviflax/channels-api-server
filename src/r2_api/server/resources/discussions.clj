@@ -1,16 +1,18 @@
 (ns r2-api.server.resources.discussions
   (:require [r2-api.server.resources.a-discussion :refer [uri]]
-            [r2-api.server.util :refer [acceptable? attr-append combine error-response pretty-json select-accept-type type-supported?]]
+            [r2-api.server.util :refer [acceptable? attr-append combine doc-for-json error-response pretty-json select-accept-type type-supported?]]
             [compojure.core :refer [GET POST routes]]
             [net.cgrand.enlive-html :as h]
             [r2-api.server.db :as db]
             [clojure.string :refer [blank?]]
             [clojure.pprint :refer :all]))
 
-(defn to-json [discussions]
-  (pretty-json {:discussions (map #(-> (assoc % :href (uri (get-in % [:group :id]) (:_id %)))
-                                       (dissoc ,,, :_id :_rev :type))
-                                  discussions)}))
+(defn to-json [group discussions]
+  (-> {:discussions (map #(-> (assoc % :href (uri (get-in % [:group :id]) (:_id %)), :id (:_id %))
+                              (dissoc ,,, :_id :_rev :type :group))
+                         discussions)}
+      (assoc ,,, :group (doc-for-json group))
+      pretty-json))
 
 (def acceptable-types #{"application/json" "text/html"})
 
@@ -28,7 +30,7 @@
   (case (select-accept-type acceptable-types accept-header)
     :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (html-template context (db/get-doc group-id)
                                                                                             (db/get-discussions group-id))}
-    :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (to-json (db/get-discussions group-id))}
+    :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (to-json (db/get-doc group-id) (db/get-discussions group-id))}
     (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))
 
 (defn create-handler [context]

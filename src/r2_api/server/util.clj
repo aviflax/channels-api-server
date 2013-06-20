@@ -20,10 +20,13 @@
    :headers {"Content-Type" "text/plain;charset=UTF-8"}
    :body message})
 
-(defn doc-to-json [m]
+(defn doc-for-json
+  "Prepare a doc map for representation as JSON"
+  [m]
   (-> (assoc m :id (:_id m))
-      (dissoc ,,, :_id :_rev :type)
-      pretty-json))
+      (dissoc ,,, :_id :_rev :type)))
+
+(def doc-to-json (comp pretty-json doc-for-json))
 
 (defn attr-append
   "An Enlive transformer which appends to the content of the indicated attribute.
