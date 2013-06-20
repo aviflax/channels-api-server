@@ -1,5 +1,5 @@
 (ns r2-api.server.resources.discussions
-  (:require [r2-api.server.resources.a-discussion :refer [uri]]
+  (:require [r2-api.server.resources.a-discussion :as a-discussion]
             [r2-api.server.util :refer [acceptable? attr-append combine doc-for-json error-response pretty-json select-accept-type type-supported?]]
             [compojure.core :refer [GET POST routes]]
             [net.cgrand.enlive-html :as h]
@@ -8,7 +8,7 @@
             [clojure.pprint :refer :all]))
 
 (defn to-json [group discussions]
-  (-> {:discussions (map #(-> (assoc % :href (uri (get-in % [:group :id]) (:_id %)), :id (:_id %))
+  (-> {:discussions (map #(-> (assoc % :href (a-discussion/uri (get-in % [:group :id]) (:_id %))
                               (dissoc ,,, :_id :_rev :type :group))
                          discussions)}
       (assoc ,,, :group (doc-for-json group))
@@ -23,7 +23,7 @@
   [:html h/text-node] (h/replace-vars (combine context group))
   [:ul#discussions :li] (h/clone-for [discussion discussions]
                      [:a] (h/do->
-                            (h/set-attr :href (uri (:_id group) (:_id discussion)))
+                            (h/set-attr :href (a-discussion/uri (:_id group) (:_id discussion)))
                             (h/content (:name discussion))))
   [:a#group] (attr-append :href str (:_id group))
   [:input#group-id] (h/set-attr :value (:_id group)))
@@ -67,4 +67,4 @@
               (db/new-doc! (db/create-message-doc group-id discussion-id (:body params))))
             (-> (represent (get headers "accept") group-id context)
                 (assoc ,,, :status 201)
-                (assoc-in ,,, [:headers "Location"] (uri group-id discussion-id)))))))))
+                (assoc-in ,,, [:headers "Location"] (a-discussion/uri group-id discussion-id)))))))))
