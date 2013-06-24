@@ -6,7 +6,7 @@
                                        [a-discussion :as a-discussion]
                                        [messages :as messages]
                                        [a-message :as a-message]]
-              [compojure.core :refer [defroutes]]
+              [compojure.core :as c]
               [compojure.handler :as ch]
               [ring.adapter.jetty :as rj]
               [ring.middleware.json :refer [wrap-json-params]]
@@ -14,14 +14,17 @@
 
 (def ^:private context {:server-name "Avi’s R2"})
 
-(defroutes routes
-  (root/create-handler context)
-  (groups/create-handler context)
-  (a-group/create-handler context)
-  (discussions/create-handler context)
-  (a-discussion/create-handler context)
-  (messages/create-handler context)
-  (a-message/create-handler context))
+(def routes
+  ; all this so I don’t have to type `context` over and over
+  (apply c/routes
+         (map #(% context)
+              [root/create-handler
+               groups/create-handler
+               a-group/create-handler
+               discussions/create-handler
+               a-discussion/create-handler
+               messages/create-handler
+               a-message/create-handler])))
 
 (defn wrap-cors [handler]
   (fn [request]
