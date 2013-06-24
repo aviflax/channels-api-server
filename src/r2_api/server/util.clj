@@ -1,4 +1,5 @@
 (ns r2-api.server.util
+  (:refer-clojure :exclude [replace])
   (:require [cheshire.core :as json]
             [clojure.string :refer [replace]]
             [com.twinql.clojure.conneg :refer [best-allowed-content-type]]))
