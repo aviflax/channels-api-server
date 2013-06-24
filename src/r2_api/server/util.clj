@@ -16,7 +16,7 @@
 
 (defn pretty-json [v]
   (json/generate-string v {:pretty true
-                           :key-fn #(replace (name %) \_ \-)}))
+                           :key-fn #(replace (name %) \- \_)}))
 
 (defn error-response [code message]
   {:status code
