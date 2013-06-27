@@ -6,11 +6,11 @@
                                        [a-discussion :as a-discussion]
                                        [messages :as messages]
                                        [a-message :as a-message]]
-              [compojure.core :as c]
-              [compojure.handler :as ch]
+              [compojure [core :as c]
+                         [handler :as ch]]
               [ring.adapter.jetty :as rj]
-              [ring.middleware.json :refer [wrap-json-params]]
-              [ring.middleware.head :refer [wrap-head]]))
+              [ring.middleware [json :refer [wrap-json-params]]
+                               [head :refer [wrap-head]]]))
 
 (def ^:private context {:server-name "Avi’s R2"})
 
