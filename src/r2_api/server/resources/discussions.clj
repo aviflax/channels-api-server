@@ -7,16 +7,17 @@
             [clojure.string :refer [blank?]]
             [clojure.pprint :refer :all]))
 
-(defn to-json [group discussions]
-  (-> {:discussions (map #(-> (assoc % :href (a-discussion/uri (get-in % [:group :id]) (:_id %))
+(defn to-json [context group discussions]
+  (-> {:server {:name (:server-name context)}
+       :discussions (map #(-> (assoc % :href (a-discussion/uri (get-in % [:group :id]) (:_id %))
                                        :id (:_id %)
                                        ; TODO: hard-coded
                                        :key-participants [{:name "Avi Flax" :href "/people/avi-flax"}]
                                        ; TODO: hard-coded
                                        :new-messages 23)
                               (dissoc ,,, :_id :_rev :type :group))
-                         discussions)}
-      (assoc ,,, :group (doc-for-json group))
+                         discussions)
+      :group (doc-for-json group)}
       pretty-json))
 
 (def acceptable-types #{"application/json" "text/html"})
@@ -34,11 +35,11 @@
   [:input#group-id] (h/set-attr :value (:_id group)))
 
 (defn represent [accept-header group-id context]
-  (case (select-accept-type acceptable-types accept-header)
-    :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (html-template context (db/get-doc group-id)
-                                                                                            (db/get-discussions group-id))}
-    :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (to-json (db/get-doc group-id) (db/get-discussions group-id))}
-    (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))
+  (let [data [context (db/get-doc group-id) (db/get-discussions group-id)]]
+    (case (select-accept-type acceptable-types accept-header)
+      :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (apply html-template data)}
+      :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (apply to-json data)}
+      (error-response 406 "Not Acceptable; available content types are text/html and application/json."))))
 
 (defn create-handler [context]
   (let [path "/groups/:group-id/discussions"]
