@@ -29,7 +29,11 @@
 (defn wrap-cors [handler]
   (fn [request]
     (let [response (handler request)]
-      (assoc-in response [:headers "Access-Control-Allow-Origin"] "*"))))
+      (assoc response :headers
+                      (assoc (:headers response)
+                             "Access-Control-Allow-Origin" "*"
+                             "Access-Control-Allow-Methods" "HEAD, OPTIONS, GET, PUT, POST, DELETE"
+                             "Access-Control-Allow-Headers" "Content-Type")))))
 
 (def ring-handler
   "this is a var so it can be used by lein-ring"
