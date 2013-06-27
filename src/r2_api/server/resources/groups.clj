@@ -10,8 +10,9 @@
             [clojure.string :refer [blank?]]
             [clojure.pprint :refer :all]))
 
-(defn to-json [groups]
-  (pretty-json {:groups (map #(-> (assoc % :href (uri (:_id %)))
+(defn to-json [context groups]
+  (pretty-json {:server {:name (:server-name context)}
+                :groups (map #(-> (assoc % :href (uri (:_id %)))
                                   (assoc ,,, :id (:_id %))
                                   (dissoc ,,, :_id :_rev :type))
                              groups)}))
@@ -29,7 +30,7 @@
 (defn represent [headers context]
   (case (select-accept-type acceptable-types (get headers "accept"))
     :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (html-template context (db/get-groups))}
-    :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (to-json (db/get-groups))}
+    :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (to-json context (db/get-groups))}
     (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))
 
 (defn create-handler [context]
