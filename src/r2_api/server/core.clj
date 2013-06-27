@@ -14,6 +14,9 @@
 
 (def ^:private context {:server-name "Avi’s R2"})
 
+; TODO: it appears that there are cases wherein an exception is thrown but Ring/Compojure return a 200
+; with no body. The response *should* be a 500. An example case is when the CouchDB DB is missing a view.
+
 (def routes
   ; all this so I don’t have to type `context` over and over
   (apply c/routes
