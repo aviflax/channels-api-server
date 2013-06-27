@@ -1,6 +1,8 @@
 (ns r2-api.server.resources.messages
-  (:require [r2-api.server.resources.a-message :refer [uri]]
-            [r2-api.server.util :refer [acceptable? attr-append combine error-response indexed pretty-json select-accept-type type-supported?]]
+  (:require [r2-api.server.resources [a-message :refer [uri]]
+                                     [a-group :as a-group]
+                                     [a-discussion :as a-discussion]]
+            [r2-api.server.util :refer [acceptable? attr-append combine doc-for-json error-response indexed pretty-json select-accept-type type-supported?]]
             [compojure.core :refer [GET POST routes]]
             [net.cgrand.enlive-html :as h]
             [r2-api.server.db :as db]
@@ -10,12 +12,12 @@
 (defn to-json
   ([group discussion messages] (to-json group discussion messages nil))
   ([group discussion messages created]
-    (let [massage-message #(-> (assoc % :href (uri (get-in % [:group :id]) (get-in % [:discussion :id]) (:_id %)))
+    (let [massage-message #(-> (assoc % :href (uri (:_id group) (:_id discussion) (:_id %)))
                                (dissoc ,,, :_id :_rev :type))
           m {:messages (map massage-message messages)
-             ; TODO: cleanup the values of group and discussion a little, add :href
-             :group group
-             :discussion discussion}
+             ; TODO: move the doc prep somewhere more reusable
+             :group (assoc (doc-for-json group) :href (a-group/uri (:_id group)))
+             :discussion (assoc (doc-for-json discussion) :href (a-discussion/uri (:_id group) (:_id discussion)))}
           ; TODO this seems awkward/iffy. Is there a better way to express this?
           m (if created
                 (assoc m :created (massage-message created))
