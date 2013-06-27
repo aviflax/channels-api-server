@@ -69,7 +69,7 @@
                        (string? (:body params))
                        (not (blank? (:body params))))
               ;; request contains body of initial message, so create that right now
-              (db/new-doc! (db/create-message-doc group-id discussion-id (:body params))))
+              (db/create-message! group-id discussion-id (:body params)))
             (-> (represent (get headers "accept") group-id context)
                 (assoc ,,, :status 201)
                 (assoc-in ,,, [:headers "Location"] (a-discussion/uri group-id discussion-id)))))))))

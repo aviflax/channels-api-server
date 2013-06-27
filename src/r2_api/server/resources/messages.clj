@@ -7,10 +7,17 @@
             [clojure.string :refer [blank?]]
             [clojure.pprint :refer :all]))
 
-(defn to-json [messages]
-  (pretty-json {:messages (map #(-> (assoc % :href (uri (get-in % [:group :id]) (get-in % [:discussion :id]) (:_id %)))
-                                    (dissoc ,,, :_id :_rev :type))
-                               messages)}))
+(defn to-json
+  ([messages] (to-json messages nil))
+  ([messages created]
+    (let [massage-message #(-> (assoc % :href (uri (get-in % [:group :id]) (get-in % [:discussion :id]) (:_id %)))
+                               (dissoc ,,, :_id :_rev :type))
+          m {:messages (map massage-message messages)}
+          ; TODO this seems awkward/iffy. Is there a better way to express this?
+          m (if created
+                (assoc m :created (massage-message created))
+                m)]
+      (pretty-json m))))
 
 (def acceptable-types #{"application/json" "text/html"})
 
@@ -32,13 +39,15 @@
                        [:a#message] (h/set-attr :href (apply uri (map :_id [group discussion message])))))
 
 
-(defn represent [accept-header group-id discussion-id context]
-  (case (select-accept-type acceptable-types accept-header)
-    :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (html-template context (db/get-doc group-id)
-                                                                                         (db/get-doc discussion-id)
-                                                                                         (db/get-messages discussion-id))}
-    :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (to-json (db/get-messages discussion-id))}
-    (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))
+(defn represent
+  ([accept-header group-id discussion-id context] (represent accept-header group-id discussion-id context nil))
+  ([accept-header group-id discussion-id context created]
+    (case (select-accept-type acceptable-types accept-header)
+      :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (html-template context (db/get-doc group-id)
+                                                                                              (db/get-doc discussion-id)
+                                                                                              (db/get-messages discussion-id))}
+      :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (to-json (db/get-messages discussion-id) created)}
+      (error-response 406 "Not Acceptable; available content types are text/html and application/json."))))
 
 (defn create-handler [context]
   (let [path "/groups/:group-id/discussions/:discussion-id/messages"]
@@ -64,7 +73,7 @@
           (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
 
           :default
-          (let [message-id (db/new-doc! (db/create-message-doc group-id discussion-id body))]
-            (-> (represent (get headers "accept") group-id discussion-id context)
+          (let [created (db/create-message! group-id discussion-id body)]
+            (-> (represent (get headers "accept") group-id discussion-id context created)
                 (assoc ,,, :status 201)
-                (assoc-in ,,, [:headers "Location"] (uri group-id discussion-id message-id)))))))))
+                (assoc-in ,,, [:headers "Location"] (uri group-id discussion-id (:_id created))))))))))

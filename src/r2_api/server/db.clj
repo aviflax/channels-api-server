@@ -65,10 +65,15 @@
    :created-date (unparse (:date-time-no-ms formatters) (now))
    :created-user {:id "avi-flax" :name "Avi Flax"}})
 
-(defn create-message-doc [group-id discussion-id body]
-  {:type "message"
-   :body body
-   :group {:id group-id}
-   :discussion {:id discussion-id}
-   :created (unparse (:date-time-no-ms formatters) (now))
-   :user {:id "avi-flax" :name "Avi Flax"}})
+(defn create-message!
+  "Creates and saves a message and returns a map representing the message, including :_id.
+   This map should be effectively identical to the maps returned by `get-messages`."
+  [group-id discussion-id body]
+  (let [m {:type "message"
+           :body body
+           :group {:id group-id}
+           :discussion {:id discussion-id}
+           :created (unparse (:date-time-no-ms formatters) (now))
+           :user {:id "avi-flax" :name "Avi Flax"}}
+        id (new-doc! m)]
+    (assoc m :_id id)))
