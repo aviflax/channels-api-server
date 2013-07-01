@@ -5,7 +5,7 @@
 
 (def acceptable-types #{"application/json" "text/html"})
 
-(def links [{:href "groups", :text "Groups"}
+(def links [{:href "channels", :text "Channels"}
             {:href "", :text "People (coming soon)"}
             {:href "", :text "Webhooks (coming soon)"}])
 

@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>${server-name} » ${group-name} » Discussions</title>
+  <title>${server-name} » ${channel-name} » Discussions</title>
   <style>
     label {
       display: block;
@@ -15,15 +15,15 @@
   <h1>
     <nav>
       <a href="/">${server-name}</a>
-      » <a href="/groups">Groups</a>
-      » <a id="group" href="/groups/">${group-name}</a>
+      » <a href="/channels">Channels</a>
+      » <a id="channel" href="/channels/">${channel-name}</a>
       » Discussions
     </nav>
   </h1>
 </header>
 
 <ul id="discussions">
-  <li><a href="/groups/${group-id}/discussions/${discussion-id}">Some discussion</a></li>
+  <li><a href="/channels/${channel-id}/discussions/${discussion-id}">Some discussion</a></li>
 </ul>
 
 <form action="./discussions" method="POST">
@@ -34,7 +34,7 @@
   <label>Initial Message Body (optional)
     <textarea name="body" id="body"></textarea>
   </label>
-  <input type="hidden" name="group-id" id="group-id" value="${group-id}"/>
+  <input type="hidden" name="channel-id" id="channel-id" value="${channel-id}"/>
   <button type="submit">Create Discussion</button>
 </form>
 

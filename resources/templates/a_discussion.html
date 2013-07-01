@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-  <title>${server-name} » ${group-name} » ${discussion-name}</title>
+  <title>${server-name} » ${channel-name} » ${discussion-name}</title>
 </head>
 <body>
 
@@ -10,16 +10,16 @@
   <h1>
     <nav>
       <a href="/">${server-name}</a>
-      » <a href="/groups">Groups</a>
-      » <a id="group" href="/groups/">${group-name}</a>
-      » <a id="discussions" href="/groups/${group-id}/discussions">Discussions</a>
+      » <a href="/channels">Channels</a>
+      » <a id="channel" href="/channels/">${channel-name}</a>
+      » <a id="discussions" href="/channels/${channel-id}/discussions">Discussions</a>
       » ${discussion-name}
     </nav>
   </h1>
 </header>
 
 <ul>
-  <li><a id="messages" href="/groups/${group-id}/discussions/${discussion-id}/messages">Messages</a></li>
+  <li><a id="messages" href="/channels/${channel-id}/discussions/${discussion-id}/messages">Messages</a></li>
 </ul>
 
 </body>

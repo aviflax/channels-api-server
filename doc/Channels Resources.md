@@ -1,13 +1,13 @@
 # Channels Resources
 
-/groups
-/groups/{group}
-/groups/{group}/discussions
-/groups/{group}/discussions/{discussion}
-/groups/{group}/discussions/{discussion}/messages
-/groups/{group}/discussions/{discussion}/messages/{message}
-/groups/{group}/hooks
-/groups/{group}/hooks/{hook}
+/channels
+/channels/{channel}
+/channels/{channel}/discussions
+/channels/{channel}/discussions/{discussion}
+/channels/{channel}/discussions/{discussion}/messages
+/channels/{channel}/discussions/{discussion}/messages/{message}
+/channels/{channel}/hooks
+/channels/{channel}/hooks/{hook}
 
 * But wait — what about discussions/threads/discussions?
 * Let’s think about this — what works for Google Groups? A Group is essentially a discussion. It’s a set of people who are talking about a specific broad discussion (like Node or Java) with lots of more specific discussions — i.e. threads
@@ -25,7 +25,7 @@
 	* email: none
 	* IRC: server
 	* IM: ?
-* Group
+* Channel
 	* email: mailing list
 	* IRC: channel
 	* IM: chat room
@@ -36,13 +36,13 @@ Discussion
 
 ## Starting a discussion
 
-* Email: you send an email to the group. e.g. `all@rr.arc90.com`
+* Email: you send an email to the channel. e.g. `all@rr.arc90.com`
  	* the subject of the email becomes the subject of the discussion
-* IRC: you post a message in the channel for the group, e.g. channel “all” on server rr.arc90.com
+* IRC: you post a message in the channel for the channel, e.g. channel “all” on server rr.arc90.com
  	* the first N chars of the message are used as the subject of the discussion
-* IM: you post a message in the “chat room” for the group
+* IM: you post a message in the “chat room” for the channel
  	* the first N chars of the message are used as the subject of the discussion
-* web/native apps: after choosing a group, you get a form with a subject and a body field
+* web/native apps: after choosing a channel, you get a form with a subject and a body field
 
 ## Viewing Discussions
 

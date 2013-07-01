@@ -3,12 +3,12 @@
   "_rev": "15-a335cfb076d8de935ba202bb0bb52f36",
   "language": "javascript",
   "views": {
-    "groups": {
-      "map": "function(doc) {\n  if (doc.type == \"group\")\n    emit(doc.name, 1);\n}",
+    "channels": {
+      "map": "function(doc) {\n  if (doc.type == \"channel\")\n    emit(doc.name, 1);\n}",
       "reduce": "function(keys, values, rereduce) {\n  return sum(values);\n}"
     },
     "discussions": {
-      "map": "function(doc) {\n  if (doc.type == \"discussion\")\n    emit(doc.group.id, {_id: doc._id, name:doc.name, group:doc.group});\n}"
+      "map": "function(doc) {\n  if (doc.type == \"discussion\")\n    emit(doc.channel.id, {_id: doc._id, name:doc.name, channel:doc.channel});\n}"
     },
     "messages": {
       "map": "function(doc) {\n  if (doc.type == \"message\")\n    emit([doc.discussion.id, doc.created], doc.body);\n}"

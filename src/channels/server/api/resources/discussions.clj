@@ -7,51 +7,51 @@
             [clojure.string :refer [blank?]]
             [clojure.pprint :refer :all]))
 
-(defn to-json [context group discussions]
+(defn to-json [context channel discussions]
   (-> {:server {:name (:server-name context)}
-       :discussions (map #(-> (assoc % :href (a-discussion/uri (get-in % [:group :id]) (:_id %))
+       :discussions (map #(-> (assoc % :href (a-discussion/uri (get-in % [:channel :id]) (:_id %))
                                        :id (:_id %)
                                        ; TODO: hard-coded
                                        :key-participants [{:name "Avi Flax" :href "/people/avi-flax"}]
                                        ; TODO: hard-coded
                                        :new-messages 23)
-                              (dissoc ,,, :_id :_rev :type :group))
+                              (dissoc ,,, :_id :_rev :type :channel))
                          discussions)
-      :group (doc-for-json group)}
+      :channel (doc-for-json channel)}
       pretty-json))
 
 (def acceptable-types #{"application/json" "text/html"})
 
-(defn uri [group-id] (str "/groups/" group-id "/discussions"))
+(defn uri [channel-id] (str "/channels/" channel-id "/discussions"))
 
 (h/deftemplate html-template "templates/discussions.html"
-  [context group discussions]
-  [:html h/text-node] (h/replace-vars (combine context group))
+  [context channel discussions]
+  [:html h/text-node] (h/replace-vars (combine context channel))
   [:ul#discussions :li] (h/clone-for [discussion discussions]
                      [:a] (h/do->
-                            (h/set-attr :href (a-discussion/uri (:_id group) (:_id discussion)))
+                            (h/set-attr :href (a-discussion/uri (:_id channel) (:_id discussion)))
                             (h/content (:name discussion))))
-  [:a#group] (attr-append :href str (:_id group))
-  [:input#group-id] (h/set-attr :value (:_id group)))
+  [:a#channel] (attr-append :href str (:_id channel))
+  [:input#channel-id] (h/set-attr :value (:_id channel)))
 
-(defn represent [accept-header group-id context]
-  (let [data [context (db/get-doc group-id) (db/get-discussions group-id)]]
+(defn represent [accept-header channel-id context]
+  (let [data [context (db/get-doc channel-id) (db/get-discussions channel-id)]]
     (case (select-accept-type acceptable-types accept-header)
       :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (apply html-template data)}
       :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (apply to-json data)}
       (error-response 406 "Not Acceptable; available content types are text/html and application/json."))))
 
 (defn create-handler [context]
-  (let [path "/groups/:group-id/discussions"]
+  (let [path "/channels/:channel-id/discussions"]
     (routes
       (GET path
-        {{group-id :group-id} :params
+        {{channel-id :channel-id} :params
          {accept-header "accept"} :headers}
-        (represent accept-header group-id context))
+        (represent accept-header channel-id context))
 
       (POST path
         {headers :headers
-         {:keys [group-id name] :as params} :params}
+         {:keys [channel-id name] :as params} :params}
         (cond
           (not (type-supported? ["application/json" "application/x-www-form-urlencoded"] (get headers "content-type")))
           (error-response 415 "The request representation must be of the type application/json or application/x-www-form-urlencoded.")
@@ -65,12 +65,12 @@
           (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
 
           :default
-          (let [discussion-id (db/new-doc! (db/create-discussion-doc name group-id))]
+          (let [discussion-id (db/new-doc! (db/create-discussion-doc name channel-id))]
             (when (and (contains? params :body)
                        (string? (:body params))
                        (not (blank? (:body params))))
               ;; request contains body of initial message, so create that right now
-              (db/create-message! group-id discussion-id (:body params)))
-            (-> (represent (get headers "accept") group-id context)
+              (db/create-message! channel-id discussion-id (:body params)))
+            (-> (represent (get headers "accept") channel-id context)
                 (assoc ,,, :status 201)
-                (assoc-in ,,, [:headers "Location"] (a-discussion/uri group-id discussion-id)))))))))
+                (assoc-in ,,, [:headers "Location"] (a-discussion/uri channel-id discussion-id)))))))))

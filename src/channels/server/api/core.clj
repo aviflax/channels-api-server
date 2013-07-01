@@ -1,7 +1,7 @@
 (ns channels.server.api.core
     (:require [channels.server.api.resources [root :as root]
-                                       [groups :as groups]
-                                       [a-group :as a-group]
+                                       [channels :as channels]
+                                       [a-channel :as a-channel]
                                        [discussions :as discussions]
                                        [a-discussion :as a-discussion]
                                        [messages :as messages]
@@ -22,8 +22,8 @@
   (apply c/routes
          (map #(% context)
               [root/create-handler
-               groups/create-handler
-               a-group/create-handler
+               channels/create-handler
+               a-channel/create-handler
                discussions/create-handler
                a-discussion/create-handler
                messages/create-handler

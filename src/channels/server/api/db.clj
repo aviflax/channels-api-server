@@ -19,12 +19,12 @@
     (couch/assoc! db id doc)
     id))
 
-(defn get-groups []
+(defn get-channels []
   (map #(hash-map :_id (:id %) :name (:key %))
-       (couch/get-view db "api" :groups {:reduce "false"})))
+       (couch/get-view db "api" :channels {:reduce "false"})))
 
-(defn get-discussions [group-id]
-  (map :value (couch/get-view db "api" :discussions {:key group-id})))
+(defn get-discussions [channel-id]
+  (map :value (couch/get-view db "api" :discussions {:key channel-id})))
 
 (defn get-messages [discussion-id]
   (map :doc (couch/get-view db "api" :messages {:startkey [discussion-id] :endkey [discussion-id {}] :include_docs "true"})))
@@ -45,33 +45,33 @@
 
 (defn get-key-count
   [view key-value]
-  (-> (couch/get-view db "api" view {:key key-value :group "true"})
+  (-> (couch/get-view db "api" view {:key key-value :channel "true"})
       first
       :value
       (or ,,, 0)))
 
-(defn create-group-doc [name]
-  {:type "group"
+(defn create-channel-doc [name]
+  {:type "channel"
    :name name
    :slug (->slug name)
    :created-date (unparse (:date-time-no-ms formatters) (now))
    :created-user {:id "avi-flax" :name "Avi Flax"}})
 
-(defn create-discussion-doc [name group-id]
+(defn create-discussion-doc [name channel-id]
   {:type "discussion"
    :name name
    :slug (->slug name)
-   :group {:id group-id}
+   :channel {:id channel-id}
    :created-date (unparse (:date-time-no-ms formatters) (now))
    :created-user {:id "avi-flax" :name "Avi Flax"}})
 
 (defn create-message!
   "Creates and saves a message and returns a map representing the message, including :_id.
    This map should be effectively identical to the maps returned by `get-messages`."
-  [group-id discussion-id body]
+  [channel-id discussion-id body]
   (let [m {:type "message"
            :body body
-           :group {:id group-id}
+           :channel {:id channel-id}
            :discussion {:id discussion-id}
            :created (unparse (:date-time-no-ms formatters) (now))
            :user {:id "avi-flax" :name "Avi Flax"}}
