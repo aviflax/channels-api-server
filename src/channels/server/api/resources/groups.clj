@@ -1,9 +1,9 @@
-(ns r2-api.server.resources.groups
-  (:require [r2-api.server.resources.a-group :refer [uri]]
-            [r2-api.server.util :refer [acceptable? error-response pretty-json select-accept-type type-supported?]]
+(ns channels.server.api.resources.groups
+  (:require [channels.server.api.resources.a-group :refer [uri]]
+            [channels.server.api.util :refer [acceptable? error-response pretty-json select-accept-type type-supported?]]
             [compojure.core :refer [GET POST routes]]
             [net.cgrand.enlive-html :as h]
-            [r2-api.server.db :as db]
+            [channels.server.api.db :as db]
             [clj-time.core :refer [now]]
             [clj-time.format :refer [formatters unparse]]
             [slugger.core :refer [->slug]]

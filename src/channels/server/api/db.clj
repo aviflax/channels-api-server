@@ -1,10 +1,10 @@
-(ns r2-api.server.db
+(ns channels.server.api.db
   (:require [com.ashafa.clutch :as couch]
             [slugger.core :refer [->slug]]
             [clj-time.core :refer [now]]
             [clj-time.format :refer [formatters unparse]]))
 
-(def ^:private db (couch/couch "avis-r2"))
+(def ^:private db (couch/couch "channels-arc90-com"))
 
 (couch/create! db)
 

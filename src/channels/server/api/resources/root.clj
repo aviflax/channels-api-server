@@ -1,5 +1,5 @@
-(ns r2-api.server.resources.root
-  (:require [r2-api.server.util :refer [error-response pretty-json select-accept-type]]
+(ns channels.server.api.resources.root
+  (:require [channels.server.api.util :refer [error-response pretty-json select-accept-type]]
             [compojure.core :refer [GET routes]]
             [net.cgrand.enlive-html :as h]))
 

@@ -1,6 +1,5 @@
-(ns r2-api.core-test
-  (:use clojure.test
-        r2-api.core))
+(ns channels.server.api.core-test
+  (:use clojure.test))
 
 (deftest a-test
   (testing "FIXME, I fail."

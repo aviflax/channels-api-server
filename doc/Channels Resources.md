@@ -1,4 +1,4 @@
-# R2 Resources
+# Channels Resources
 
 /groups
 /groups/{group}

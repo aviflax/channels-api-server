@@ -1,9 +1,9 @@
-(ns r2-api.server.resources.discussions
-  (:require [r2-api.server.resources.a-discussion :as a-discussion]
-            [r2-api.server.util :refer [acceptable? attr-append combine doc-for-json error-response pretty-json select-accept-type type-supported?]]
+(ns channels.server.api.resources.discussions
+  (:require [channels.server.api.resources.a-discussion :as a-discussion]
+            [channels.server.api.util :refer [acceptable? attr-append combine doc-for-json error-response pretty-json select-accept-type type-supported?]]
             [compojure.core :refer [GET POST routes]]
             [net.cgrand.enlive-html :as h]
-            [r2-api.server.db :as db]
+            [channels.server.api.db :as db]
             [clojure.string :refer [blank?]]
             [clojure.pprint :refer :all]))
 

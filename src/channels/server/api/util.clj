@@ -1,4 +1,4 @@
-(ns r2-api.server.util
+(ns channels.server.api.util
   (:refer-clojure :exclude [replace])
   (:require [cheshire.core :as json]
             [clojure.string :refer [replace]]

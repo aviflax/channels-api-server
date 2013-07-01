@@ -1,5 +1,5 @@
-(ns r2-api.server.core
-    (:require [r2-api.server.resources [root :as root]
+(ns channels.server.api.core
+    (:require [channels.server.api.resources [root :as root]
                                        [groups :as groups]
                                        [a-group :as a-group]
                                        [discussions :as discussions]
@@ -12,7 +12,7 @@
               [ring.middleware [json :refer [wrap-json-params]]
                                [head :refer [wrap-head]]]))
 
-(def ^:private context {:server-name "Avi’s R2"})
+(def ^:private context {:server-name "channels.arc90.com"})
 
 ; TODO: it appears that there are cases wherein an exception is thrown but Ring/Compojure return a 200
 ; with no body. The response *should* be a 500. An example case is when the CouchDB DB is missing a view.

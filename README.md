@@ -1,6 +1,6 @@
-# r2-api
+# Channels Server
 
-A Clojure library designed to ... well, that part is up to you.
+Server for Channels, hosting the API and mail servers
 
 ## Usage
 

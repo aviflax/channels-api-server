@@ -1,9 +1,9 @@
-(ns r2-api.server.resources.a-group
-  (:require [r2-api.server.util :refer [combine doc-to-json error-response select-accept-type]]
-            [r2-api.server.resources.discussions :as discussions]
+(ns channels.server.api.resources.a-group
+  (:require [channels.server.api.util :refer [combine doc-to-json error-response select-accept-type]]
+            [channels.server.api.resources.discussions :as discussions]
             [compojure.core :refer [GET routes]]
             [net.cgrand.enlive-html :as h]
-            [r2-api.server.db :as db]))
+            [channels.server.api.db :as db]))
 
 (def acceptable-types #{"application/json" "text/html"})
 

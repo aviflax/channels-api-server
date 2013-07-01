@@ -1,23 +1,24 @@
-(ns r2-api.server.resources.messages
-  (:require [r2-api.server.resources [a-message :refer [uri]]
+(ns channels.server.api.resources.messages
+  (:require [channels.server.api.resources [a-message :refer [uri]]
                                      [a-group :as a-group]
                                      [a-discussion :as a-discussion]]
-            [r2-api.server.util :refer [acceptable? attr-append combine doc-for-json error-response indexed pretty-json select-accept-type type-supported?]]
+            [channels.server.api.util :refer [acceptable? attr-append combine doc-for-json error-response indexed pretty-json select-accept-type type-supported?]]
             [compojure.core :refer [GET POST routes]]
             [net.cgrand.enlive-html :as h]
-            [r2-api.server.db :as db]
+            [channels.server.api.db :as db]
             [clojure.string :refer [blank?]]
             [clojure.pprint :refer :all]))
 
 (defn to-json
-  ([group discussion messages] (to-json group discussion messages nil))
-  ([group discussion messages created]
+  ([context group discussion messages] (to-json group discussion messages nil))
+  ([context group discussion messages created]
     (let [massage-message #(-> (assoc % :href (uri (:_id group) (:_id discussion) (:_id %)))
                                (dissoc ,,, :_id :_rev :type))
           m {:messages (map massage-message messages)
              ; TODO: move the doc prep somewhere more reusable
              :group (assoc (doc-for-json group) :href (a-group/uri (:_id group)))
-             :discussion (assoc (doc-for-json discussion) :href (a-discussion/uri (:_id group) (:_id discussion)))}
+             :discussion (assoc (doc-for-json discussion) :href (a-discussion/uri (:_id group) (:_id discussion)))
+             :server {:name (:server-name context)}}
           ; TODO this seems awkward/iffy. Is there a better way to express this?
           m (if created
                 (assoc m :created (massage-message created))
@@ -27,7 +28,7 @@
 (def acceptable-types #{"application/json" "text/html"})
 
 (h/deftemplate html-template "templates/messages.html"
-  [context group discussion messages]
+  [context group discussion messages created]
   [:html h/text-node] (h/replace-vars (combine context group discussion))
   [:a#group] (attr-append :href str (:_id group))
   [:a#discussions] (h/set-attr :href (str "/groups/" (:_id group) "/discussions"))
@@ -47,12 +48,10 @@
 (defn represent
   ([accept-header group-id discussion-id context] (represent accept-header group-id discussion-id context nil))
   ([accept-header group-id discussion-id context created]
-    (let [group (db/get-doc group-id)
-          discussion (db/get-doc discussion-id)
-          messages (db/get-messages discussion-id)]
+    (let [data [context (db/get-doc group-id) (db/get-doc discussion-id) (db/get-messages discussion-id) created]]
       (case (select-accept-type acceptable-types accept-header)
-        :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (html-template context group discussion messages)}
-        :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (to-json group discussion messages created)}
+        :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (apply html-template data)}
+        :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (apply to-json data)}
         (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))))
 
 (defn create-handler [context]
