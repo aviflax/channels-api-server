@@ -7,25 +7,31 @@
             [clojure.string :refer [blank?]]
             [clojure.pprint :refer :all]))
 
-(defn to-json [context channel discussions]
-  (-> {:server {:name (:server-name context)}
-       :discussions (map #(-> (assoc % :href (a-discussion/uri (get-in % [:channel :id]) (:_id %))
-                                       :id (:_id %)
-                                       ; TODO: hard-coded
-                                       :key-participants [{:name "Avi Flax" :href "/people/avi-flax"}]
-                                       ; TODO: hard-coded
-                                       :new-messages 23)
-                              (dissoc ,,, :_id :_rev :type :channel))
-                         discussions)
-      :channel (doc-for-json channel)}
-      pretty-json))
+(defn to-json
+  ([context channel discussions] (to-json context channel discussions nil))
+  ([context channel discussions created]
+  (let [massage-discussion #(-> (assoc % :href (a-discussion/uri (get-in % [:channel :id]) (:_id %))
+                                         :id (:_id %)
+                                         ; TODO: hard-coded
+                                         :key-participants [{:name "Avi Flax" :href "/people/avi-flax"}]
+                                         ; TODO: hard-coded
+                                         :new-messages 23)
+                                (dissoc ,,, :_id :_rev :type :channel))
+        m {:discussions (map massage-discussion discussions)
+           :server {:name (:server-name context)}
+           :channel (doc-for-json channel)}
+        ; TODO this seems awkward/iffy. Is there a better way to express this?
+        m (if created
+              (assoc m :created (massage-discussion created))
+              m)]
+    (pretty-json m))))
 
 (def acceptable-types #{"application/json" "text/html"})
 
 (defn uri [channel-id] (str "/channels/" channel-id "/discussions"))
 
 (h/deftemplate html-template "templates/discussions.html"
-  [context channel discussions]
+  [context channel discussions created]
   [:html h/text-node] (h/replace-vars (combine context channel))
   [:ul#discussions :li] (h/clone-for [discussion discussions]
                      [:a] (h/do->
@@ -34,12 +40,14 @@
   [:a#channel] (attr-append :href str (:_id channel))
   [:input#channel-id] (h/set-attr :value (:_id channel)))
 
-(defn represent [accept-header channel-id context]
-  (let [data [context (db/get-doc channel-id) (db/get-discussions channel-id)]]
-    (case (select-accept-type acceptable-types accept-header)
-      :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (apply html-template data)}
-      :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (apply to-json data)}
-      (error-response 406 "Not Acceptable; available content types are text/html and application/json."))))
+(defn represent
+  ([accept-header channel-id context] (represent accept-header channel-id context nil))
+  ([accept-header channel-id context created]
+    (let [data [context (db/get-doc channel-id) (db/get-discussions channel-id) created]]
+      (case (select-accept-type acceptable-types accept-header)
+        :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (apply html-template data)}
+        :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (apply to-json data)}
+        (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))))
 
 (defn create-handler [context]
   (let [path "/channels/:channel-id/discussions"]
@@ -65,12 +73,12 @@
           (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
 
           :default
-          (let [discussion-id (db/new-doc! (db/create-discussion-doc name channel-id))]
+          (let [discussion (db/create-discussion! name channel-id)]
             (when (and (contains? params :body)
                        (string? (:body params))
                        (not (blank? (:body params))))
               ;; request contains body of initial message, so create that right now
-              (db/create-message! channel-id discussion-id (:body params)))
-            (-> (represent (get headers "accept") channel-id context)
+              (db/create-message! channel-id (:_id discussion) (:body params)))
+            (-> (represent (get headers "accept") channel-id context discussion)
                 (assoc ,,, :status 201)
-                (assoc-in ,,, [:headers "Location"] (a-discussion/uri channel-id discussion-id)))))))))
+                (assoc-in ,,, [:headers "Location"] (a-discussion/uri channel-id (:_id discussion))))))))))

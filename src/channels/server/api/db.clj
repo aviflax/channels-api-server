@@ -50,14 +50,19 @@
       :value
       (or ,,, 0)))
 
-(defn create-channel-doc [name]
+(defn ^:private save-doc-and-assoc-id!
+   "Saves a new doc and returns the map with :_id assoced."
+  [m]
+  (assoc m :_id (new-doc! m)))
+
+(defn ^:private create-channel-doc [name]
   {:type "channel"
    :name name
    :slug (->slug name)
    :created-date (unparse (:date-time-no-ms formatters) (now))
    :created-user {:id "avi-flax" :name "Avi Flax"}})
 
-(defn create-discussion-doc [name channel-id]
+(defn ^:private create-discussion-doc [name channel-id]
   {:type "discussion"
    :name name
    :slug (->slug name)
@@ -65,15 +70,22 @@
    :created-date (unparse (:date-time-no-ms formatters) (now))
    :created-user {:id "avi-flax" :name "Avi Flax"}})
 
-(defn create-message!
-  "Creates and saves a message and returns a map representing the message, including :_id.
-   This map should be effectively identical to the maps returned by `get-messages`."
-  [channel-id discussion-id body]
-  (let [m {:type "message"
-           :body body
-           :channel {:id channel-id}
-           :discussion {:id discussion-id}
-           :created (unparse (:date-time-no-ms formatters) (now))
-           :user {:id "avi-flax" :name "Avi Flax"}}
-        id (new-doc! m)]
-    (assoc m :_id id)))
+(defn ^:private create-message-doc [channel-id discussion-id body]
+  {:type "message"
+   :body body
+   :channel {:id channel-id}
+   :discussion {:id discussion-id}
+   :created (unparse (:date-time-no-ms formatters) (now))
+   :user {:id "avi-flax" :name "Avi Flax"}})
+
+(defn create-channel! [name]
+  ;; This could use comp but it doesn’t because I prefer fn signatures to be specific. Also less typing.
+  (save-doc-and-assoc-id! (create-channel-doc name)))
+
+(defn create-discussion! [name channel-id]
+  ;; This could use comp but it doesn’t because I prefer fn signatures to be specific. Also less typing.
+  (save-doc-and-assoc-id! (create-discussion-doc name channel-id)))
+
+(defn create-message! [channel-id discussion-id body]
+  ;; This could use comp but it doesn’t because I prefer fn signatures to be specific. Also less typing.
+  (save-doc-and-assoc-id! (create-message-doc channel-id discussion-id body)))

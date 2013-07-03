@@ -10,12 +10,18 @@
             [clojure.string :refer [blank?]]
             [clojure.pprint :refer :all]))
 
-(defn to-json [context channels]
-  (pretty-json {:server {:name (:server-name context)}
-                :channels (map #(-> (assoc % :href (uri (:_id %)))
-                                  (assoc ,,, :id (:_id %))
-                                  (dissoc ,,, :_id :_rev :type))
-                             channels)}))
+(defn to-json
+  ([context channels] (to-json context channels nil))
+  ([context channels created]
+  (let [massage-channel #(-> (assoc % :id (:_id %), :href (uri (:_id %)))
+                             (dissoc ,,, :_id :_rev :type))
+        m {:server {:name (:server-name context)}
+           :channels (map massage-channel channels)}
+        ; TODO this seems awkward/iffy. Is there a better way to express this?
+        m (if created
+              (assoc m :created (massage-channel created))
+              m)]
+    (pretty-json m))))
 
 (def acceptable-types #{"application/json" "text/html"})
 
@@ -27,18 +33,20 @@
                             (h/set-attr :href (uri (:_id channel)))
                             (h/content (:name channel)))))
 
-(defn represent [headers context]
-  (case (select-accept-type acceptable-types (get headers "accept"))
-    :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (html-template context (db/get-channels))}
-    :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (to-json context (db/get-channels))}
-    (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))
+(defn represent
+  ([accept-header context] (represent accept-header context nil))
+  ([accept-header context created]
+    (case (select-accept-type acceptable-types accept-header)
+      :html {:headers {"Content-Type" "text/html;charset=UTF-8"} :body (html-template context (db/get-channels))}
+      :json {:headers {"Content-Type" "application/json;charset=UTF-8"} :body (to-json context (db/get-channels) created)}
+      (error-response 406 "Not Acceptable; available content types are text/html and application/json."))))
 
 (defn create-handler [context]
   (let [path "/channels"]
     (routes
       (GET path
         {headers :headers}
-        (represent headers context))
+        (represent (get headers "accept") context))
 
       (POST path
         {headers :headers {name :name} :params}
@@ -58,7 +66,7 @@
           (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
 
           :default
-          (let [channel-id (db/new-doc! (db/create-channel-doc name))]
-            (-> (represent headers context)
+          (let [created (db/create-channel! name)]
+            (-> (represent (get headers "accept") context created)
                 (assoc ,,, :status 201)
-                (assoc-in ,,, [:headers "Location"] (uri channel-id)))))))))
+                (assoc-in ,,, [:headers "Location"] (uri (:_id created))))))))))
