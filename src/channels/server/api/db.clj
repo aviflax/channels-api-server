@@ -78,14 +78,23 @@
    :created (unparse (:date-time-no-ms formatters) (now))
    :user {:id "avi-flax" :name "Avi Flax"}})
 
-(defn create-channel! [name]
+(defn create-channel!
+  "Creates and saves a channel and returns a map representing the channel, including :_id.
+   This map will be a superset of the maps returned by `get-channels`."
+  [name]
   ;; This could use comp but it doesn’t because I prefer fn signatures to be specific. Also less typing.
   (save-doc-and-assoc-id! (create-channel-doc name)))
 
-(defn create-discussion! [subject channel-id]
+(defn create-discussion!
+  "Creates and saves a discussion and returns a map representing the discussion, including :_id.
+   This map will be a superset of the maps returned by `get-discussions`."
+  [subject channel-id]
   ;; This could use comp but it doesn’t because I prefer fn signatures to be specific. Also less typing.
   (save-doc-and-assoc-id! (create-discussion-doc subject channel-id)))
 
-(defn create-message! [channel-id discussion-id body]
+(defn create-message!
+  "Creates and saves a message and returns a map representing the message, including :_id.
+   This map will be a superset of the maps returned by `get-messages`."
+  [channel-id discussion-id body]
   ;; This could use comp but it doesn’t because I prefer fn signatures to be specific. Also less typing.
   (save-doc-and-assoc-id! (create-message-doc channel-id discussion-id body)))
