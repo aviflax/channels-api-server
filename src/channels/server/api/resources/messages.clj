@@ -10,7 +10,7 @@
             [clojure.pprint :refer :all]))
 
 (defn to-json
-  ([context channel discussion messages] (to-json channel discussion messages nil))
+  ([context channel discussion messages] (to-json context channel discussion messages nil))
   ([context channel discussion messages created]
     (let [massage-message #(-> (assoc % :href (uri (:_id channel) (:_id discussion) (:_id %)))
                                (dissoc ,,, :_id :_rev :type))
