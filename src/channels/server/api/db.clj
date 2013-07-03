@@ -65,7 +65,7 @@
 (defn ^:private create-discussion-doc [subject channel-id]
   {:type "discussion"
    :subject subject
-   :slug (->slug name)
+   :slug (->slug subject)
    :channel {:id channel-id}
    :created-date (unparse (:date-time-no-ms formatters) (now))
    :created-user {:id "avi-flax" :name "Avi Flax"}})
@@ -82,9 +82,9 @@
   ;; This could use comp but it doesn’t because I prefer fn signatures to be specific. Also less typing.
   (save-doc-and-assoc-id! (create-channel-doc name)))
 
-(defn create-discussion! [name channel-id]
+(defn create-discussion! [subject channel-id]
   ;; This could use comp but it doesn’t because I prefer fn signatures to be specific. Also less typing.
-  (save-doc-and-assoc-id! (create-discussion-doc name channel-id)))
+  (save-doc-and-assoc-id! (create-discussion-doc subject channel-id)))
 
 (defn create-message! [channel-id discussion-id body]
   ;; This could use comp but it doesn’t because I prefer fn signatures to be specific. Also less typing.
