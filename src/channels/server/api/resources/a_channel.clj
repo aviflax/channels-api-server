@@ -1,5 +1,5 @@
 (ns channels.server.api.resources.a-channel
-  (:require [channels.server.api.util :refer [combine doc-to-json error-response select-accept-type]]
+  (:require [channels.server.api.util :refer [maps-for-html doc-to-json error-response select-accept-type]]
             [channels.server.api.resources.discussions :as discussions]
             [compojure.core :refer [GET routes]]
             [net.cgrand.enlive-html :as h]
@@ -11,7 +11,7 @@
 
 (h/deftemplate html-template "templates/a_channel.html"
   [context channel]
-  [:html h/text-node] (h/replace-vars (combine context channel))
+  [:html h/text-node] (h/replace-vars (maps-for-html context channel))
   [:a#discussions] (h/set-attr :href (discussions/uri (:_id channel))))
 
 (defn represent [accept-header channel context]

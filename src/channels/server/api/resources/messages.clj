@@ -2,7 +2,7 @@
   (:require [channels.server.api.resources [a-message :refer [uri]]
                                      [a-channel :as a-channel]
                                      [a-discussion :as a-discussion]]
-            [channels.server.api.util :refer [acceptable? attr-append combine doc-for-json error-response indexed pretty-json select-accept-type type-supported?]]
+            [channels.server.api.util :refer [acceptable? attr-append maps-for-html doc-for-json error-response indexed pretty-json select-accept-type type-supported?]]
             [compojure.core :refer [GET POST routes]]
             [net.cgrand.enlive-html :as h]
             [channels.server.api.db :as db]
@@ -29,7 +29,7 @@
 
 (h/deftemplate html-template "templates/messages.html"
   [context channel discussion messages created]
-  [:html h/text-node] (h/replace-vars (combine context channel discussion))
+  [:html h/text-node] (h/replace-vars (maps-for-html context channel discussion))
   [:a#channel] (attr-append :href str (:_id channel))
   [:a#discussions] (h/set-attr :href (str "/channels/" (:_id channel) "/discussions"))
   [:a#discussion] (h/set-attr :href (str "/channels/" (:_id channel) "/discussions/" (:_id discussion)))
