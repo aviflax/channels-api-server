@@ -40,12 +40,13 @@
     (apply update-in node [:attrs attr] f args)))
 
 (defn combine
+  "Combine various maps together for HTML template variable substitution"
   ([context channel]
    (merge context
           {:channel-id (:_id channel) :channel-name (:name channel)}))
   ([context channel discussion]
    (merge (combine context channel)
-          {:discussion-id (:_id discussion) :discussion-name (:name discussion)})))
+          {:discussion-id (:_id discussion) :discussion-subject (:subject discussion)})))
 
 (defn indexed
   "Returns a lazy sequence of [index, item] pairs, where items come

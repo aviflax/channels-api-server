@@ -62,9 +62,9 @@
    :created-date (unparse (:date-time-no-ms formatters) (now))
    :created-user {:id "avi-flax" :name "Avi Flax"}})
 
-(defn ^:private create-discussion-doc [name channel-id]
+(defn ^:private create-discussion-doc [subject channel-id]
   {:type "discussion"
-   :name name
+   :subject subject
    :slug (->slug name)
    :channel {:id channel-id}
    :created-date (unparse (:date-time-no-ms formatters) (now))

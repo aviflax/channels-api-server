@@ -36,7 +36,7 @@
   [:ul#discussions :li] (h/clone-for [discussion discussions]
                      [:a] (h/do->
                             (h/set-attr :href (a-discussion/uri (:_id channel) (:_id discussion)))
-                            (h/content (:name discussion))))
+                            (h/content (:subject discussion))))
   [:a#channel] (attr-append :href str (:_id channel))
   [:input#channel-id] (h/set-attr :value (:_id channel)))
 
@@ -59,21 +59,21 @@
 
       (POST path
         {headers :headers
-         {:keys [channel-id name] :as params} :params}
+         {:keys [channel-id subject] :as params} :params}
         (cond
           (not (type-supported? ["application/json" "application/x-www-form-urlencoded"] (get headers "content-type")))
           (error-response 415 "The request representation must be of the type application/json or application/x-www-form-urlencoded.")
 
-          (or (nil? name)
-              (not (string? name))
-              (blank? name))
-          (error-response 400 "The request must include the string parameter or property 'name', and it may not be null or blank.")
+          (or (nil? subject)
+              (not (string? subject))
+              (blank? subject))
+          (error-response 400 "The request must include the string parameter or property 'subject', and it may not be null or blank.")
 
           (not (acceptable? acceptable-types (get headers "accept")))
           (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
 
           :default
-          (let [discussion (db/create-discussion! name channel-id)]
+          (let [discussion (db/create-discussion! subject channel-id)]
             (when (and (contains? params :body)
                        (string? (:body params))
                        (not (blank? (:body params))))
