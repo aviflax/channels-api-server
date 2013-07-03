@@ -24,7 +24,9 @@
        (couch/get-view db "api" :channels {:reduce "false"})))
 
 (defn get-discussions [channel-id]
-  (map :value (couch/get-view db "api" :discussions {:key channel-id})))
+  "Currently returns discussions sorted in reverse chronological order by creation date. This will eventually change
+   to be sorted in reverse chronological order by the most recent message in each discussion."
+  (map :value (couch/get-view db "api" :discussions {:key channel-id :descending "true"})))
 
 (defn get-messages [discussion-id]
   (map :doc (couch/get-view db "api" :messages {:startkey [discussion-id] :endkey [discussion-id {}] :include_docs "true"})))
