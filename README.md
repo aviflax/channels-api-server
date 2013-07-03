@@ -9,7 +9,7 @@ FIXME
 ## To Do
 
 * [ ] Implement DELETE for all “single” resources
-* [ ] Rename property `name` of discussions to `subject`
+* [ ] Sort discussions by most-recently-updated (i.e. most recent message)
 * [ ] Look into why POST and DELETE requests, when sent to handlers which don’t implement those methods,
   return a 200 OK, instead of 405 Not Allowed
 
