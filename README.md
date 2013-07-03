@@ -10,6 +10,10 @@ FIXME
 
 * [ ] Implement DELETE for all “single” resources
 * [ ] Sort discussions by most-recently-updated (i.e. most recent message)
+* [ ] Implement pagination for collection resources
+* [ ] Implement following of channels and discussions
+* [ ] Implement visibility settings for channels
+* [ ] Implement people resources
 * [ ] Look into why POST and DELETE requests, when sent to handlers which don’t implement those methods,
   return a 200 OK, instead of 405 Not Allowed
 
