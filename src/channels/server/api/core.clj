@@ -7,7 +7,8 @@
                                        [messages :as messages]
                                        [a-message :as a-message]]
               [compojure [core :as c]
-                         [handler :as ch]]
+                         [handler :as ch]
+                         [route :refer [not-found]]]
               [ring.adapter.jetty :as rj]
               [ring.middleware [json :refer [wrap-json-params]]
                                [head :refer [wrap-head]]]))
@@ -20,14 +21,15 @@
 (def routes
   ; all this so I don’t have to type `context` over and over
   (apply c/routes
-         (map #(% context)
-              [root/create-handler
-               channels/create-handler
-               a-channel/create-handler
-               discussions/create-handler
-               a-discussion/create-handler
-               messages/create-handler
-               a-message/create-handler])))
+         (-> (map #(% context)
+                  [root/create-handler
+                   channels/create-handler
+                   a-channel/create-handler
+                   discussions/create-handler
+                   a-discussion/create-handler
+                   messages/create-handler
+                   a-message/create-handler])
+             (concat ,,, [(not-found "No resource with the specified URI exists.")]))))
 
 (defn wrap-cors [handler]
   (fn [request]
