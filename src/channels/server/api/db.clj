@@ -57,10 +57,12 @@
   [m]
   (assoc m :_id (new-doc! m)))
 
-(defn ^:private create-channel-doc [name]
+(defn ^:private create-channel-doc [name participants access-control]
   {:type "channel"
    :name name
    :slug (->slug name)
+   :participants participants
+   :access-control access-control
    :created-date (unparse (:date-time-no-ms formatters) (now))
    :created-user {:id "avi-flax" :name "Avi Flax"}})
 
@@ -83,9 +85,9 @@
 (defn create-channel!
   "Creates and saves a channel and returns a map representing the channel, including :_id.
    This map will be a superset of the maps returned by `get-channels`."
-  [name]
+  [name participants access-control]
   ;; This could use comp but it doesn’t because I prefer fn signatures to be specific. Also less typing.
-  (save-doc-and-assoc-id! (create-channel-doc name)))
+  (save-doc-and-assoc-id! (create-channel-doc name participants access-control)))
 
 (defn create-discussion!
   "Creates and saves a discussion and returns a map representing the discussion, including :_id.

@@ -49,15 +49,21 @@
         (represent (get headers "accept") context))
 
       (POST path
-        {headers :headers {name :name} :params}
+        {headers :headers {:keys [name participants access_control]} :params}
         (cond
           (not (type-supported? ["application/json" "application/x-www-form-urlencoded"] (get headers "content-type")))
           (error-response 415 "The request representation must be of the type application/json or application/x-www-form-urlencoded.")
 
-          (or (nil? name)
-              (not (string? name))
-              (blank? name))
-          (error-response 400 "The request must include the string parameter or property 'name', and it may not be null or blank.")
+          (let [required-post-params [name participants access_control]]
+            (or (some nil? required-post-params)
+                (some #(not (string? %)) required-post-params)
+                (some blank? required-post-params)))
+          (error-response 400 "The request must include the parameters/properties 'name', 'participants', and 'access_control', and they may not be null or blank.")
+
+          ;; TODO: Validate participants
+
+          (not (#{"all-users" "participants-and-admins"} access_control))
+          (error-response 400 "The value of the parameter/property 'access_control' must be either 'all-users' or 'participants-and-admins'.")
 
           (not= (db/get-key-count :channels name) 0)
           (error-response 409 "A channel with the specified name already exists.")
@@ -66,7 +72,7 @@
           (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
 
           :default
-          (let [created (db/create-channel! name)]
+          (let [created (db/create-channel! name participants access_control)]
             (-> (represent (get headers "accept") context created)
                 (assoc ,,, :status 201)
                 (assoc-in ,,, [:headers "Location"] (uri (:_id created))))))))))
