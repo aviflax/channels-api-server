@@ -33,12 +33,20 @@
 
 (defn wrap-cors [handler]
   (fn [request]
-    (let [response (handler request)]
-      (assoc response :headers
-                      (assoc (:headers response)
-                             "Access-Control-Allow-Origin" "*"
-                             "Access-Control-Allow-Methods" "HEAD, OPTIONS, GET, PUT, POST, DELETE"
-                             "Access-Control-Allow-Headers" "Content-Type")))))
+    (let [response (handler request)
+          response (assoc response :headers
+                          (assoc (:headers response)
+                                 "Access-Control-Allow-Origin" "*"
+                                 "Access-Control-Allow-Methods" "OPTIONS, HEAD, GET, PUT, POST, DELETE"
+                                 "Access-Control-Allow-Headers" "Content-Type, Location"
+                                 "Access-Control-Max-Age" "3600"))]
+      ;; if the request is an OPTIONS request and the response is a 404, it’s likely that there was simply
+      ;; no route established for OPTIONS and the request path; so we’ll just assume this is a CORS preflight
+      ;; request and respond with a 200 and an empty body so as to enable CORS functionality
+      (if (and (= (:request-method request) :options)
+               (= (:status response) 404))
+          (assoc response :status 200, :body "")
+          response))))
 
 (def ring-handler
   "this is a var so it can be used by lein-ring"
