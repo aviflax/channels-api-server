@@ -1,5 +1,6 @@
 (ns channels.server.api.db
-  (:require [com.ashafa.clutch :as couch]
+  (:require [clojure.string :refer [blank?]]
+            [com.ashafa.clutch :as couch]
             [slugger.core :refer [->slug]]
             [clj-time.core :refer [now]]
             [clj-time.format :refer [formatters unparse]]))
@@ -60,7 +61,9 @@
 (defn ^:private create-channel-doc [name participants access-control]
   {:type "channel"
    :name name
-   :slug (->slug name)
+   :slug (when (and (string? name)
+                    (not (blank? name)))
+               (->slug name)) ;; TODO: if name is null or blank, we really do still need a slug. Maybe base it on the recipients? Or... random words? TBD.
    :participants participants
    :access-control access-control
    :created-date (unparse (:date-time-no-ms formatters) (now))

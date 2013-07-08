@@ -54,11 +54,11 @@
           (not (type-supported? ["application/json" "application/x-www-form-urlencoded"] (get headers "content-type")))
           (error-response 415 "The request representation must be of the type application/json or application/x-www-form-urlencoded.")
 
-          (let [required-post-params [name participants access_control]]
+          (let [required-post-params [participants access_control]] ; `name` is optional
             (or (some nil? required-post-params)
                 (some #(not (string? %)) required-post-params)
                 (some blank? required-post-params)))
-          (error-response 400 "The request must include the parameters/properties 'name', 'participants', and 'access_control', and they may not be null or blank.")
+          (error-response 400 "The request must include the parameters/properties 'participants' and 'access_control', and they may not be null or blank.")
 
           ;; TODO: Validate participants
 
