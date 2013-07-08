@@ -38,7 +38,8 @@
                           (assoc (:headers response)
                                  "Access-Control-Allow-Origin" "*"
                                  "Access-Control-Allow-Methods" "OPTIONS, HEAD, GET, PUT, POST, DELETE"
-                                 "Access-Control-Allow-Headers" "Content-Type, Location"
+                                 "Access-Control-Allow-Headers" "Content-Type"
+                                 "Access-Control-Expose-Headers" "Location"
                                  "Access-Control-Max-Age" "3600"))]
       ;; if the request is an OPTIONS request and the response is a 404, it’s likely that there was simply
       ;; no route established for OPTIONS and the request path; so we’ll just assume this is a CORS preflight
