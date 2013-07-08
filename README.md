@@ -8,14 +8,13 @@ FIXME
 
 ## To Do
 
-* [ ] Implement DELETE for all “single” resources
+* [ ] Implement PUT and DELETE for all “single” resources
 * [ ] Sort discussions by most-recently-updated (i.e. most recent message)
 * [ ] Implement pagination for collection resources
 * [ ] Implement following of channels and discussions
 * [ ] Implement visibility settings for channels
 * [ ] Implement people resources
-* [ ] Look into why POST and DELETE requests, when sent to handlers which don’t implement those methods,
-  return a 200 OK, instead of 405 Not Allowed
+* [ ] When a request is sent for a known resource path but an unsupported method, return 405 rather than 404
 
 ## Copyright
 
