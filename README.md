@@ -8,6 +8,7 @@ FIXME
 
 ## To Do
 
+* [ ] When representing a channel, if `name` is nil or blank, populate it with some of the channel’s key participants
 * [ ] Implement PUT and DELETE for all “single” resources
 * [ ] Sort discussions by most-recently-updated (i.e. most recent message)
 * [ ] Implement pagination for collection resources
