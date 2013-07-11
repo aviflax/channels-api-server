@@ -25,7 +25,6 @@
   "A more concise alternative to Compojure’s `routes`. Allows the path
    to be specified only once even if a resource supports multiple methods;
    adds an ANY route to return a 405 response for any unsupported method.
-   TODO: this should add an OPTIONS route and return the Allow header.
 
    Use like so:
    (resource path methods)
@@ -39,11 +38,12 @@
      (POST [title author] (create-book author) (get-books author)))
   "
   `(routes
-     ~@(map (fn [[method bindings expr]]
-            ;; TODO: support lists containing more than 3 forms
-            `(~method ~path ~bindings ~expr))
+     ~@(map (fn [[method bindings & exprs]]
+            `(~method ~path ~bindings ~@exprs))
            methods)
-     (ANY ~path [] (error-response 405 "Method Not Allowed"))))
+    ;; TODO: add an OPTIONS route and return the Allow header
+    ;; TODO: only add the ANY route if an ANY route wasn’t already specified
+    (ANY ~path [] (error-response 405 "Method Not Allowed"))))
 
 
 (defn error-response [code message]
