@@ -1,8 +1,8 @@
 (ns channels.server.api.resources.discussions
   (:require [channels.server.api.shared :refer [acceptable-types]]
             [channels.server.api.resources.a-discussion :as a-discussion]
-            [channels.server.api.util :refer [acceptable? attr-append maps-for-html doc-for-json error-response pretty-json select-accept-type type-supported?]]
-            [compojure.core :refer [GET POST routes]]
+            [channels.server.api.util :refer [acceptable? attr-append maps-for-html doc-for-json error-response pretty-json select-accept-type resource type-supported?]]
+            [compojure.core :refer [GET POST]]
             [net.cgrand.enlive-html :as h]
             [channels.server.api.db :as db]
             [clojure.string :refer [blank?]]
@@ -50,38 +50,37 @@
         (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))))
 
 (defn create-handler [context]
-  (let [path "/channels/:channel-id/discussions"]
-    (routes
-      (GET path
-        {{channel-id :channel-id} :params
-         {accept-header "accept"} :headers}
-        (represent accept-header channel-id context))
+  (resource "/channels/:channel-id/discussions"
+    (GET
+      {{channel-id :channel-id} :params
+       {accept-header "accept"} :headers}
+      (represent accept-header channel-id context))
 
-      (POST path
-        {headers :headers
-         {:keys [channel-id subject] :as params} :params}
-        (cond
-          (not (contains? headers "content-type"))
-          (error-response 400 "The request must include the header Content-Type.")
+    (POST
+      {headers :headers
+       {:keys [channel-id subject] :as params} :params}
+      (cond
+        (not (contains? headers "content-type"))
+        (error-response 400 "The request must include the header Content-Type.")
 
-          (not (type-supported? ["application/json" "application/x-www-form-urlencoded"] (get headers "content-type")))
-          (error-response 415 "The request representation must be of the type application/json or application/x-www-form-urlencoded.")
+        (not (type-supported? ["application/json" "application/x-www-form-urlencoded"] (get headers "content-type")))
+        (error-response 415 "The request representation must be of the type application/json or application/x-www-form-urlencoded.")
 
-          (or (nil? subject)
-              (not (string? subject))
-              (blank? subject))
-          (error-response 400 "The request must include the string parameter or property 'subject', and it may not be null or blank.")
+        (or (nil? subject)
+            (not (string? subject))
+            (blank? subject))
+        (error-response 400 "The request must include the string parameter or property 'subject', and it may not be null or blank.")
 
-          (not (acceptable? acceptable-types (get headers "accept")))
-          (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
+        (not (acceptable? acceptable-types (get headers "accept")))
+        (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
 
-          :default
-          (let [discussion (db/create-discussion! subject channel-id)]
-            (when (and (contains? params :body)
-                       (string? (:body params))
-                       (not (blank? (:body params))))
-              ;; request contains body of initial message, so create that right now
-              (db/create-message! channel-id (:_id discussion) (:body params)))
-            (-> (represent (get headers "accept") channel-id context discussion)
-                (assoc ,,, :status 201)
-                (assoc-in ,,, [:headers "Location"] (a-discussion/uri channel-id (:_id discussion))))))))))
+        :default
+        (let [discussion (db/create-discussion! subject channel-id)]
+          (when (and (contains? params :body)
+                     (string? (:body params))
+                     (not (blank? (:body params))))
+            ;; request contains body of initial message, so create that right now
+            (db/create-message! channel-id (:_id discussion) (:body params)))
+          (-> (represent (get headers "accept") channel-id context discussion)
+              (assoc ,,, :status 201)
+              (assoc-in ,,, [:headers "Location"] (a-discussion/uri channel-id (:_id discussion)))))))))

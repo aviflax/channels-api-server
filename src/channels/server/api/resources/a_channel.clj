@@ -1,8 +1,8 @@
 (ns channels.server.api.resources.a-channel
   (:require [channels.server.api.shared :refer [acceptable-types]]
-            [channels.server.api.util :refer [maps-for-html doc-to-json error-response select-accept-type]]
+            [channels.server.api.util :refer [maps-for-html doc-to-json error-response resource select-accept-type]]
             [channels.server.api.resources.discussions :as discussions]
-            [compojure.core :refer [GET routes]]
+            [compojure.core :refer [GET]]
             [net.cgrand.enlive-html :as h]
             [channels.server.api.db :as db]))
 
@@ -20,8 +20,8 @@
     (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))
 
 (defn create-handler [context]
-  (routes
-    (GET "/channels/:channel-id"
+  (resource "/channels/:channel-id"
+    (GET
       {{channel-id :channel-id} :params
        {accept-header "accept"} :headers}
       (let [channel (db/get-doc channel-id)]

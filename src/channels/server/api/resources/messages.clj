@@ -3,8 +3,8 @@
             [channels.server.api.resources [a-message :refer [uri]]
                                            [a-channel :as a-channel]
                                            [a-discussion :as a-discussion]]
-            [channels.server.api.util :refer [acceptable? attr-append maps-for-html doc-for-json error-response indexed pretty-json select-accept-type type-supported?]]
-            [compojure.core :refer [GET POST routes]]
+            [channels.server.api.util :refer [acceptable? attr-append maps-for-html doc-for-json error-response indexed pretty-json resource select-accept-type type-supported?]]
+            [compojure.core :refer [GET POST]]
             [net.cgrand.enlive-html :as h]
             [channels.server.api.db :as db]
             [clojure.string :refer [blank?]]
@@ -55,33 +55,32 @@
         (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))))
 
 (defn create-handler [context]
-  (let [path "/channels/:channel-id/discussions/:discussion-id/messages"]
-    (routes
-      (GET path
-        {{:keys [channel-id discussion-id]} :params
-         {accept-header "accept"} :headers}
-        (represent accept-header channel-id discussion-id context))
+  (resource "/channels/:channel-id/discussions/:discussion-id/messages"
+    (GET
+      {{:keys [channel-id discussion-id]} :params
+       {accept-header "accept"} :headers}
+      (represent accept-header channel-id discussion-id context))
 
-      (POST path
-        {headers :headers
-         {:keys [channel-id discussion-id body]} :params}
-        (cond
-          (not (contains? headers "content-type"))
-          (error-response 400 "The request must include the header Content-Type.")
+    (POST
+      {headers :headers
+       {:keys [channel-id discussion-id body]} :params}
+      (cond
+        (not (contains? headers "content-type"))
+        (error-response 400 "The request must include the header Content-Type.")
 
-          (not (type-supported? ["application/json" "application/x-www-form-urlencoded"] (get headers "content-type")))
-          (error-response 415 "The request representation must be of the type application/json or application/x-www-form-urlencoded.")
+        (not (type-supported? ["application/json" "application/x-www-form-urlencoded"] (get headers "content-type")))
+        (error-response 415 "The request representation must be of the type application/json or application/x-www-form-urlencoded.")
 
-          (or (nil? body)
-              (not (string? body))
-              (blank? body))
-          (error-response 400 "The request must include the string parameter or property 'body', and it may not be null or blank.")
+        (or (nil? body)
+            (not (string? body))
+            (blank? body))
+        (error-response 400 "The request must include the string parameter or property 'body', and it may not be null or blank.")
 
-          (not (acceptable? acceptable-types (get headers "accept")))
-          (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
+        (not (acceptable? acceptable-types (get headers "accept")))
+        (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
 
-          :default
-          (let [created (db/create-message! channel-id discussion-id body)]
-            (-> (represent (get headers "accept") channel-id discussion-id context created)
-                (assoc ,,, :status 201)
-                (assoc-in ,,, [:headers "Location"] (uri channel-id discussion-id (:_id created))))))))))
+        :default
+        (let [created (db/create-message! channel-id discussion-id body)]
+          (-> (represent (get headers "accept") channel-id discussion-id context created)
+              (assoc ,,, :status 201)
+              (assoc-in ,,, [:headers "Location"] (uri channel-id discussion-id (:_id created)))))))))
