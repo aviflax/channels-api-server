@@ -66,6 +66,9 @@
         {headers :headers
          {:keys [channel-id discussion-id body]} :params}
         (cond
+          (not (contains? headers "content-type"))
+          (error-response 400 "The request must include the header Content-Type.")
+
           (not (type-supported? ["application/json" "application/x-www-form-urlencoded"] (get headers "content-type")))
           (error-response 415 "The request representation must be of the type application/json or application/x-www-form-urlencoded.")
 
