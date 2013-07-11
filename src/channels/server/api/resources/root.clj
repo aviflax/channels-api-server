@@ -1,9 +1,8 @@
 (ns channels.server.api.resources.root
-  (:require [channels.server.api.util :refer [error-response pretty-json resource select-accept-type]]
+  (:require [channels.server.api.shared :refer [acceptable-types]]
+            [channels.server.api.util :refer [error-response pretty-json resource select-accept-type]]
             [compojure.core :refer [GET]]
             [net.cgrand.enlive-html :as h]))
-
-(def acceptable-types #{"application/json" "text/html"})
 
 (def links [{:href "channels", :text "Channels"}
             {:href "", :text "People (coming soon)"}

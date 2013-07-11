@@ -1,5 +1,6 @@
 (ns channels.server.api.resources.channels
-  (:require [channels.server.api.resources.a-channel :refer [uri]]
+  (:require [channels.server.api.shared :refer [acceptable-types]]
+            [channels.server.api.resources.a-channel :refer [uri]]
             [channels.server.api.util :refer [acceptable? error-response pretty-json resource select-accept-type type-supported?]]
             [compojure.core :refer [GET POST]]
             [net.cgrand.enlive-html :as h]
@@ -23,7 +24,6 @@
               m)]
     (pretty-json m))))
 
-(def acceptable-types #{"application/json" "text/html"})
 
 (h/deftemplate html-template "templates/channels.html"
   [context channels]

@@ -1,7 +1,8 @@
 (ns channels.server.api.resources.messages
-  (:require [channels.server.api.resources [a-message :refer [uri]]
-                                     [a-channel :as a-channel]
-                                     [a-discussion :as a-discussion]]
+  (:require [channels.server.api.shared :refer [acceptable-types]]
+            [channels.server.api.resources [a-message :refer [uri]]
+                                           [a-channel :as a-channel]
+                                           [a-discussion :as a-discussion]]
             [channels.server.api.util :refer [acceptable? attr-append maps-for-html doc-for-json error-response indexed pretty-json select-accept-type type-supported?]]
             [compojure.core :refer [GET POST routes]]
             [net.cgrand.enlive-html :as h]
@@ -25,7 +26,6 @@
                 m)]
       (pretty-json m))))
 
-(def acceptable-types #{"application/json" "text/html"})
 
 (h/deftemplate html-template "templates/messages.html"
   [context channel discussion messages created]

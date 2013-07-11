@@ -1,10 +1,9 @@
 (ns channels.server.api.resources.a-message
-  (:require [channels.server.api.util :refer [attr-append maps-for-html doc-to-json error-response select-accept-type]]
+  (:require [channels.server.api.shared :refer [acceptable-types]]
+            [channels.server.api.util :refer [attr-append maps-for-html doc-to-json error-response select-accept-type]]
             [compojure.core :refer [GET routes]]
             [net.cgrand.enlive-html :as h]
             [channels.server.api.db :as db]))
-
-(def acceptable-types #{"application/json" "text/html"})
 
 (defn uri [channel-id discussion-id message-id] (str "/channels/" channel-id "/discussions/" discussion-id "/messages/" message-id))
 

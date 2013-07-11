@@ -1,5 +1,6 @@
 (ns channels.server.api.resources.discussions
-  (:require [channels.server.api.resources.a-discussion :as a-discussion]
+  (:require [channels.server.api.shared :refer [acceptable-types]]
+            [channels.server.api.resources.a-discussion :as a-discussion]
             [channels.server.api.util :refer [acceptable? attr-append maps-for-html doc-for-json error-response pretty-json select-accept-type type-supported?]]
             [compojure.core :refer [GET POST routes]]
             [net.cgrand.enlive-html :as h]
@@ -26,7 +27,6 @@
               m)]
     (pretty-json m))))
 
-(def acceptable-types #{"application/json" "text/html"})
 
 (defn uri [channel-id] (str "/channels/" channel-id "/discussions"))
 
