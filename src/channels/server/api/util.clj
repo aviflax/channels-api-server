@@ -1,8 +1,8 @@
 (ns channels.server.api.util
   (:refer-clojure :exclude [replace])
   (:require [cheshire.core :as json]
-            [compojure.core :refer [ANY routes]]
-            [clojure.string :refer [replace]]
+            [compojure.core :refer [ANY OPTIONS routes]]
+            [clojure.string :refer [join replace]]
             [com.twinql.clojure.conneg :refer [best-allowed-content-type]]))
 
 (defn select-accept-type [acceptable-types accept-header]
@@ -21,13 +21,15 @@
                            :key-fn #(replace (name %) \- \_)}))
 
 
-(defmacro resource [path & methods]
-  "A more concise alternative to Compojure’s `routes`. Allows the path
-   to be specified only once even if a resource supports multiple methods;
-   adds an ANY route to return a 405 response for any unsupported method.
+(defmacro resource [path & body]
+  "Provides more concise alternative to Compojure’s `routes`, with these features:
+
+   * Allows the path to be specified only once even if a resource supports multiple methods
+   * Adds an OPTIONS route which returns an Allow header
+   * Adds an ANY route to return a 405 response for any unsupported method
 
    Use like so:
-   (resource path methods)
+   (resource path method method)
 
    `methods` should be standard compojure routes, except with the path omitted.
 
@@ -39,11 +41,24 @@
   "
   `(routes
      ~@(map (fn [[method bindings & exprs]]
-            `(~method ~path ~bindings ~@exprs))
-           methods)
-    ;; TODO: add an OPTIONS route and return the Allow header
-    ;; TODO: only add the ANY route if an ANY route wasn’t already specified
-    (ANY ~path [] (error-response 405 "Method Not Allowed"))))
+              `(~method ~path ~bindings ~@exprs))
+            body)
+
+     ~@(let [methods (set (map first body))
+             allowed (->> (map name methods)
+                          (concat ["OPTIONS" "HEAD"] ,,,)
+                          (join ", " ,,,))]
+         `(
+           ~(when-not (methods 'OPTIONS)
+             (let []
+               `(OPTIONS ~path [] {:status 200
+                                   :headers {"Allow" ~allowed}
+                                   :body nil})))
+           ~(when-not (methods 'ANY)
+             `(ANY ~path [] {:status 405
+                             :headers {"Allow" ~allowed
+                                       "Content-Type" "text/plain;charset=UTF-8"}
+                             :body "Method Not Allowed"}))))))
 
 
 (defn error-response [code message]
