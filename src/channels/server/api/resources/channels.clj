@@ -1,7 +1,7 @@
 (ns channels.server.api.resources.channels
   (:require [channels.server.api.resources.a-channel :refer [uri]]
-            [channels.server.api.util :refer [acceptable? error-response pretty-json select-accept-type type-supported?]]
-            [compojure.core :refer [GET POST routes]]
+            [channels.server.api.util :refer [acceptable? error-response pretty-json resource select-accept-type type-supported?]]
+            [compojure.core :refer [GET POST]]
             [net.cgrand.enlive-html :as h]
             [channels.server.api.db :as db]
             [clj-time.core :refer [now]]
@@ -42,37 +42,36 @@
       (error-response 406 "Not Acceptable; available content types are text/html and application/json."))))
 
 (defn create-handler [context]
-  (let [path "/channels"]
-    (routes
-      (GET path
-        {headers :headers}
-        (represent (get headers "accept") context))
+  (resource "/channels"
+    (GET
+      {headers :headers}
+      (represent (get headers "accept") context))
 
-      (POST path
-        {headers :headers {:keys [name participants access_control]} :params}
-        (cond
-          (not (type-supported? ["application/json" "application/x-www-form-urlencoded"] (get headers "content-type")))
-          (error-response 415 "The request representation must be of the type application/json or application/x-www-form-urlencoded.")
+    (POST
+      {headers :headers {:keys [name participants access_control]} :params}
+      (cond
+        (not (type-supported? ["application/json" "application/x-www-form-urlencoded"] (get headers "content-type")))
+        (error-response 415 "The request representation must be of the type application/json or application/x-www-form-urlencoded.")
 
-          (let [required-post-params [participants access_control]] ; `name` is optional
-            (or (some nil? required-post-params)
-                (some #(not (string? %)) required-post-params)
-                (some blank? required-post-params)))
-          (error-response 400 "The request must include the parameters/properties 'participants' and 'access_control', and they may not be null or blank.")
+        (let [required-post-params [participants access_control]] ; `name` is optional
+          (or (some nil? required-post-params)
+              (some #(not (string? %)) required-post-params)
+              (some blank? required-post-params)))
+        (error-response 400 "The request must include the parameters/properties 'participants' and 'access_control', and they may not be null or blank.")
 
-          ;; TODO: Validate participants
+        ;; TODO: Validate participants
 
-          (not (#{"all-users" "participants-and-admins"} access_control))
-          (error-response 400 "The value of the parameter/property 'access_control' must be either 'all-users' or 'participants-and-admins'.")
+        (not (#{"all-users" "participants-and-admins"} access_control))
+        (error-response 400 "The value of the parameter/property 'access_control' must be either 'all-users' or 'participants-and-admins'.")
 
-          (not= (db/get-key-count :channels name) 0)
-          (error-response 409 "A channel with the specified name already exists.")
+        (not= (db/get-key-count :channels name) 0)
+        (error-response 409 "A channel with the specified name already exists.")
 
-          (not (acceptable? acceptable-types (get headers "accept")))
-          (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
+        (not (acceptable? acceptable-types (get headers "accept")))
+        (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
 
-          :default
-          (let [created (db/create-channel! name participants access_control)]
-            (-> (represent (get headers "accept") context created)
-                (assoc ,,, :status 201)
-                (assoc-in ,,, [:headers "Location"] (uri (:_id created))))))))))
+        :default
+        (let [created (db/create-channel! name participants access_control)]
+          (-> (represent (get headers "accept") context created)
+              (assoc ,,, :status 201)
+              (assoc-in ,,, [:headers "Location"] (uri (:_id created)))))))))
