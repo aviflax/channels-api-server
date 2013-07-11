@@ -1,6 +1,7 @@
 (ns channels.server.api.util
   (:refer-clojure :exclude [replace])
   (:require [cheshire.core :as json]
+            [compojure.core :refer [ANY routes]]
             [clojure.string :refer [replace]]
             [com.twinql.clojure.conneg :refer [best-allowed-content-type]]))
 
@@ -18,6 +19,32 @@
 (defn pretty-json [v]
   (json/generate-string v {:pretty true
                            :key-fn #(replace (name %) \- \_)}))
+
+
+(defmacro resource [path & methods]
+  "A more concise alternative to Compojure’s `routes`. Allows the path
+   to be specified only once even if a resource supports multiple methods;
+   adds an ANY route to return a 405 response for any unsupported method.
+   TODO: this should add an OPTIONS route and return the Allow header.
+
+   Use like so:
+   (resource path methods)
+
+   `methods` should be standard compojure routes, except with the path omitted.
+
+   For example:
+
+   (resource \"/books\"
+     (GET [author] (get-books author))
+     (POST [title author] (create-book author) (get-books author)))
+  "
+  `(routes
+     ~@(map (fn [[method bindings expr]]
+            ;; TODO: support lists containing more than 3 forms
+            `(~method ~path ~bindings ~expr))
+           methods)
+     (ANY ~path [] (error-response 405 "Method Not Allowed"))))
+
 
 (defn error-response [code message]
   {:status code

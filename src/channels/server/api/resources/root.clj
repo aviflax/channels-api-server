@@ -1,6 +1,6 @@
 (ns channels.server.api.resources.root
-  (:require [channels.server.api.util :refer [error-response pretty-json select-accept-type]]
-            [compojure.core :refer [ANY GET routes]]
+  (:require [channels.server.api.util :refer [error-response pretty-json resource select-accept-type]]
+            [compojure.core :refer [GET]]
             [net.cgrand.enlive-html :as h]))
 
 (def acceptable-types #{"application/json" "text/html"})
@@ -28,6 +28,5 @@
     (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))
 
 (defn create-handler [context]
-  (routes
-    (GET "/" {{accept-header "accept"} :headers} (represent accept-header context links))
-    (ANY "/" [] {:status 405, :body "Method Not Allowed"})))
+  (resource "/"
+    (GET {{accept-header "accept"} :headers} (represent accept-header context links))))
