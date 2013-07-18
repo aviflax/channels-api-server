@@ -10,7 +10,7 @@
   <h1>
     <nav>
       <a href="/">${server-name}</a>
-      Channels
+      » Channels
     </nav>
   </h1>
 </header>
@@ -21,7 +21,9 @@
 
 <form action="./channels" method="POST">
   <legend>Create a new channel</legend>
-  <input type="text" name="name" id="name" required>
+  <label>Name:
+    <input type="text" name="name" id="name" required>
+  </label>
   <button type="submit">Create Channel</button>
 </form>
 
