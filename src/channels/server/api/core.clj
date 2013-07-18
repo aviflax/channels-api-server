@@ -1,17 +1,19 @@
 (ns channels.server.api.core
-    (:require [channels.server.api.resources [root :as root]
-                                             [channels :as channels]
-                                             [a-channel :as a-channel]
-                                             [discussions :as discussions]
-                                             [a-discussion :as a-discussion]
-                                             [messages :as messages]
-                                             [a-message :as a-message]]
-              [compojure [core :as c]
-                         [handler :as ch]
-                         [route :refer [not-found]]]
-              [ring.adapter.jetty :as rj]
-              [ring.middleware [json :refer [wrap-json-params]]
-                               [head :refer [wrap-head]]]))
+  (:require [channels.server.api.resources [root :as root]
+                                           [channels :as channels]
+                                           [a-channel :as a-channel]
+                                           [discussions :as discussions]
+                                           [a-discussion :as a-discussion]
+                                           [messages :as messages]
+                                           [a-message :as a-message]
+                                           [users :as users]
+                                           [a-user :as a-user]]
+            [compojure [core :as c]
+                       [handler :as ch]
+                       [route :refer [not-found]]]
+            [ring.adapter.jetty :as rj]
+            [ring.middleware [json :refer [wrap-json-params]]
+                             [head :refer [wrap-head]]]))
 
 ; TODO: it appears that there are cases wherein an exception is thrown but Ring/Compojure return a 200
 ; with no body. The response *should* be a 500. An example case is when the CouchDB DB is missing a view.
@@ -28,8 +30,10 @@
                    discussions/create-handler
                    a-discussion/create-handler
                    messages/create-handler
-                   a-message/create-handler])
-             (concat ,,, [(not-found "No resource with the specified URI exists.")]))))
+                   a-message/create-handler
+                   users/create-handler
+                   a-user/create-handler])
+              (concat ,,, [(not-found "No resource with the specified URI exists.")]))))
 
 (defn wrap-cors [handler]
   (fn [request]
