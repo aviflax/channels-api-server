@@ -1,6 +1,6 @@
 {
   "_id": "_design/api",
-  "_rev": "3-315a7ae349fc70860ec7f90f7caa391b",
+  "_rev": "5-f69b8958e1d93ef79507c818712cd0f1",
   "language": "javascript",
   "views": {
     "channels": {
@@ -12,6 +12,10 @@
     },
     "messages": {
       "map": "function(doc) {\n  if (doc.type == \"message\")\n    emit([doc.discussion.id, doc.created], doc.body);\n}"
+    },
+    "users": {
+      "map": "function(doc) {\n  if (doc.type == \"user\")\n    emit(doc.name, 1);\n}",
+      "reduce": "function(keys, values, rereduce) {\n  return sum(values);\n}"
     }
   }
 }

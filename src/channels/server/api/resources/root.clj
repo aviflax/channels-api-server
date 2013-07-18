@@ -5,7 +5,7 @@
             [net.cgrand.enlive-html :as h]))
 
 (def links [{:href "channels", :text "Channels"}
-            {:href "", :text "People (coming soon)"}
+            {:href "users", :text "Users"}
             {:href "", :text "Webhooks (coming soon)"}])
 
 (h/deftemplate html-template "templates/root.html"

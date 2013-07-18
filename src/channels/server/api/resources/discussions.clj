@@ -1,7 +1,7 @@
 (ns channels.server.api.resources.discussions
   (:require [channels.server.api.shared :refer [acceptable-types]]
-            [channels.server.api.resources.a-discussion :as a-discussion]
-            [channels.server.api.util :refer [acceptable? attr-append maps-for-html doc-for-json error-response pretty-json select-accept-type resource type-supported?]]
+            [channels.server.api.uri :as uri]
+            [channels.server.api.util :refer [acceptable? maps-for-html error-response pretty-json select-accept-type resource type-supported?]]
             [compojure.core :refer [GET POST]]
             [net.cgrand.enlive-html :as h]
             [channels.server.api.db :as db]
@@ -11,16 +11,15 @@
 (defn to-json
   ([context channel discussions] (to-json context channel discussions nil))
   ([context channel discussions created]
-  (let [massage-discussion #(-> (assoc % :href (a-discussion/uri (get-in % [:channel :id]) (:_id %))
-                                         :id (:_id %)
-                                         ; TODO: hard-coded
-                                         :key-participants [{:name "Avi Flax" :href "/people/avi-flax"}]
-                                         ; TODO: hard-coded
-                                         :new-messages 23)
-                                (dissoc ,,, :_id :_rev :type :channel))
+  (let [massage-discussion #(assoc % :href (uri/a-discussion (get-in % [:channel :id]) (:id %))
+                                     :id (:id %)
+                                     ; TODO: hard-coded
+                                     :key-participants [{:name "Avi Flax" :href "/people/avi-flax"}]
+                                     ; TODO: hard-coded
+                                     :new-messages 23)
         m {:discussions (map massage-discussion discussions)
            :server {:name (:server-name context)}
-           :channel (doc-for-json channel)}
+           :channel channel}
         ; TODO this seems awkward/iffy. Is there a better way to express this?
         m (if created
               (assoc m :created (massage-discussion created))
@@ -28,17 +27,15 @@
     (pretty-json m))))
 
 
-(defn uri [channel-id] (str "/channels/" channel-id "/discussions"))
-
 (h/deftemplate html-template "templates/discussions.html"
   [context channel discussions created]
   [:html h/text-node] (h/replace-vars (maps-for-html context channel))
   [:ul#discussions :li] (h/clone-for [discussion discussions]
                      [:a] (h/do->
-                            (h/set-attr :href (a-discussion/uri (:_id channel) (:_id discussion)))
+                            (h/set-attr :href (uri/a-discussion (:id channel) (:_id discussion)))
                             (h/content (:subject discussion))))
-  [:a#channel] (attr-append :href str (:_id channel))
-  [:input#channel-id] (h/set-attr :value (:_id channel)))
+  [:a#channel] (h/set-attr :href (uri/a-channel (:id channel)))
+  [:input#channel-id] (h/set-attr :value (:id channel)))
 
 (defn represent
   ([accept-header channel-id context] (represent accept-header channel-id context nil))
@@ -83,4 +80,4 @@
             (db/create-message! channel-id (:_id discussion) (:body params)))
           (-> (represent (get headers "accept") channel-id context discussion)
               (assoc ,,, :status 201)
-              (assoc-in ,,, [:headers "Location"] (a-discussion/uri channel-id (:_id discussion)))))))))
+              (assoc-in ,,, [:headers "Location"] (uri/a-discussion channel-id (:id discussion)))))))))

@@ -8,14 +8,15 @@ FIXME
 
 ## To Do
 
+* [ ] Require POST requests to include identification of the user creating the resource
+* [ ] Find a more concise and declarative way to validate JSON request representations (probably JSON Schema)
 * [ ] When representing a channel, if `name` is nil or blank, populate it with some of the channel’s key participants
 * [ ] Implement PUT and DELETE for all “single” resources
 * [ ] Sort discussions by most-recently-updated (i.e. most recent message)
 * [ ] Implement pagination for collection resources
 * [ ] Implement following of channels and discussions
 * [ ] Implement visibility settings for channels
-* [ ] Implement people resources
-* [ ] When a request is sent for a known resource path but an unsupported method, return 405 rather than 404
+
 
 ## Copyright
 

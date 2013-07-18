@@ -5,14 +5,26 @@
             [clj-time.core :refer [now]]
             [clj-time.format :refer [formatters unparse]]))
 
+(comment "Data Access Adapter for the Channels server. Currently users CouchDB, but
+  *attempts* to insulate callers from CouchDB, to some degree.")
+
 (def ^:private db (couch/couch "channels-arc90-com"))
 
 (couch/create! db)
 
+(defn ^:private cleanup-doc
+  "Removes couchdb-specific aspects from a doc"
+  [doc]
+  (-> (assoc doc :id (:_id doc))
+      (dissoc ,,, :_id :_rev :type)))
+
 (defn get-doc
-  "Just for convenience as it’s shorter."
+  "Gets a doc from the DB by ID.
+   Copies :_id to :id, and removes :_id, :_rev, and :type.
+   Returns nil if a doc with the specified ID doesn’t exist"
   [id]
-  (couch/get-document db id))
+  (when-let [doc (couch/get-document db id)]
+    (cleanup-doc doc)))
 
 (defn new-doc!
   [doc]
@@ -20,22 +32,32 @@
     (couch/assoc! db id doc)
     id))
 
-(defn get-channels []
-  (map #(hash-map :_id (:id %) :name (:key %))
-       (couch/get-view db "api" :channels {:reduce "false"})))
+
+(defn ^:private get-view [view]
+  (map #(-> (assoc % :name (:key %))
+            (dissoc ,,, :key :value))
+        (couch/get-view db "api" (keyword view) {:reduce "false"})))
+
+
+(defn get-channels [] (get-view :channels))
+
+(defn get-users [] (get-view :users))
 
 (defn get-discussions [channel-id]
   "Currently returns discussions sorted in reverse chronological order by creation date. This will eventually change
    to be sorted in reverse chronological order by the most recent message in each discussion."
   (map :value (couch/get-view db "api" :discussions {:key channel-id :descending "true"})))
 
+
 (defn get-messages [discussion-id]
-  (map :doc (couch/get-view db "api" :messages {:startkey [discussion-id] :endkey [discussion-id {}] :include_docs "true"})))
+  (map (comp cleanup-doc :doc)
+       (couch/get-view db "api" :messages {:startkey [discussion-id] :endkey [discussion-id {}] :include_docs "true"})))
+
 
 (defn get-multi
-  "Accepts a sequence of IDs and returns a sequence of retrieved documents (as maps) in the same order as the provided IDs."
+  "Accepts a sequence of IDs and returns a lazy sequence of retrieved documents (as maps) in the same order as the provided IDs."
   [ids]
-  (map :doc
+  (map (comp cleanup-doc :doc)
        (couch/all-documents db {:include_docs true} {:keys ids})))
 
 (defn get-multi-map
@@ -48,7 +70,7 @@
 
 (defn get-key-count
   [view key-value]
-  (-> (couch/get-view db "api" view {:key key-value :channel "true"})
+  (-> (couch/get-view db "api" view {:key key-value})
       first
       :value
       (or ,,, 0)))
@@ -77,13 +99,22 @@
    :created-date (unparse (:date-time-no-ms formatters) (now))
    :created-user {:id "avi-flax" :name "Avi Flax"}})
 
-(defn ^:private create-message-doc [channel-id discussion-id body]
+(defn ^:private create-message-doc [channel-id discussion-id user body]
   {:type "message"
    :body body
    :channel {:id channel-id}
    :discussion {:id discussion-id}
    :created (unparse (:date-time-no-ms formatters) (now))
-   :user {:id "avi-flax" :name "Avi Flax"}})
+   :user user})
+
+
+(defn ^:private create-user-doc [name email]
+  {:type "user"
+   :name name
+   :email email
+   :slug (->slug name)
+   :created-date (unparse (:date-time-no-ms formatters) (now))})
+
 
 (defn create-channel!
   "Creates and saves a channel and returns a map representing the channel, including :_id.
@@ -102,6 +133,13 @@
 (defn create-message!
   "Creates and saves a message and returns a map representing the message, including :_id.
    This map will be a superset of the maps returned by `get-messages`."
-  [channel-id discussion-id body]
+  [channel-id discussion-id user body]
   ;; This could use comp but it doesn’t because I prefer fn signatures to be specific. Also less typing.
-  (save-doc-and-assoc-id! (create-message-doc channel-id discussion-id body)))
+  (save-doc-and-assoc-id! (create-message-doc channel-id discussion-id user body)))
+
+(defn create-user!
+  "Creates and saves a user and returns a map representing the user, including :_id.
+   This map will be a superset of the maps returned by `get-users`."
+  [name email]
+  ;; This could use comp but it doesn’t because I prefer fn signatures to be specific. Also less typing.
+  (save-doc-and-assoc-id! (create-user-doc name email)))

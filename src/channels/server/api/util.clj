@@ -66,29 +66,14 @@
    :headers {"Content-Type" "text/plain;charset=UTF-8"}
    :body message})
 
-(defn doc-for-json
-  "Prepare a doc map for representation as JSON"
-  [m]
-  (-> (assoc m :id (:_id m))
-      (dissoc ,,, :_id :_rev :type)))
-
-(def doc-to-json (comp pretty-json doc-for-json))
-
-(defn attr-append
-  "An Enlive transformer which appends to the content of the indicated attribute.
-   From http://stackoverflow.com/a/12687199/7012"
-  [attr f & args]
-  (fn [node]
-    (apply update-in node [:attrs attr] f args)))
-
 (defn maps-for-html
   "Combine various maps together for HTML template variable substitution"
   ([context channel]
    (merge context
-          {:channel-id (:_id channel) :channel-name (:name channel)}))
+          {:channel-id (:id channel) :channel-name (:name channel)}))
   ([context channel discussion]
    (merge (maps-for-html context channel)
-          {:discussion-id (:_id discussion) :discussion-subject (:subject discussion)})))
+          {:discussion-id (:id discussion) :discussion-subject (:subject discussion)})))
 
 (defn indexed
   "Returns a lazy sequence of [index, item] pairs, where items come
