@@ -60,13 +60,6 @@
   (map (comp cleanup-doc :doc)
        (couch/all-documents db {:include_docs true} {:keys ids})))
 
-(defn get-multi-map
-  "Accepts a sequence of IDs and returns a map of id to document."
-  [ids]
-  (->> (get-multi ids)
-       (map #(vector (:_id %) %))
-       flatten
-       (apply hash-map)))
 
 (defn get-key-count
   [view key-value]
