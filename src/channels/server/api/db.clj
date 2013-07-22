@@ -13,14 +13,14 @@
 (couch/create! db)
 
 (defn ^:private cleanup-doc
-  "Removes couchdb-specific aspects from a doc"
+  "Removes couchdb-specific aspects from a doc.
+   Specifically: copies :_id to :id, and removes :_id, :_rev, and :type."
   [doc]
   (-> (assoc doc :id (:_id doc))
       (dissoc ,,, :_id :_rev :type)))
 
 (defn get-doc
-  "Gets a doc from the DB by ID.
-   Copies :_id to :id, and removes :_id, :_rev, and :type.
+  "Gets a doc from the DB by ID, and cleans it up to remove CouchDB-specific aspects.
    Returns nil if a doc with the specified ID doesn’t exist"
   [id]
   (when-let [doc (couch/get-document db id)]
@@ -41,12 +41,15 @@
 
 (defn get-channels [] (get-view :channels))
 
+(get-channels)
+
 (defn get-users [] (get-view :users))
 
 (defn get-discussions [channel-id]
   "Currently returns discussions sorted in reverse chronological order by creation date. This will eventually change
    to be sorted in reverse chronological order by the most recent message in each discussion."
-  (map :value (couch/get-view db "api" :discussions {:key channel-id :descending "true"})))
+  (map (comp cleanup-doc :value)
+       (couch/get-view db "api" :discussions {:key channel-id :descending "true"})))
 
 
 (defn get-messages [discussion-id]
@@ -69,9 +72,9 @@
       (or ,,, 0)))
 
 (defn ^:private save-doc-and-assoc-id!
-   "Saves a new doc and returns the map with :_id assoced."
+   "Saves a new doc and returns the map with :id assoced."
   [m]
-  (assoc m :_id (new-doc! m)))
+  (assoc m :id (new-doc! m)))
 
 (defn ^:private create-channel-doc [name participants access-control]
   {:type "channel"
@@ -110,28 +113,28 @@
 
 
 (defn create-channel!
-  "Creates and saves a channel and returns a map representing the channel, including :_id.
+  "Creates and saves a channel and returns a map representing the channel, including :id.
    This map will be a superset of the maps returned by `get-channels`."
   [name participants access-control]
   ;; This could use comp but it doesn’t because I prefer fn signatures to be specific. Also less typing.
   (save-doc-and-assoc-id! (create-channel-doc name participants access-control)))
 
 (defn create-discussion!
-  "Creates and saves a discussion and returns a map representing the discussion, including :_id.
+  "Creates and saves a discussion and returns a map representing the discussion, including :id.
    This map will be a superset of the maps returned by `get-discussions`."
   [subject channel-id]
   ;; This could use comp but it doesn’t because I prefer fn signatures to be specific. Also less typing.
   (save-doc-and-assoc-id! (create-discussion-doc subject channel-id)))
 
 (defn create-message!
-  "Creates and saves a message and returns a map representing the message, including :_id.
+  "Creates and saves a message and returns a map representing the message, including :id.
    This map will be a superset of the maps returned by `get-messages`."
   [channel-id discussion-id user body]
   ;; This could use comp but it doesn’t because I prefer fn signatures to be specific. Also less typing.
   (save-doc-and-assoc-id! (create-message-doc channel-id discussion-id user body)))
 
 (defn create-user!
-  "Creates and saves a user and returns a map representing the user, including :_id.
+  "Creates and saves a user and returns a map representing the user, including :id.
    This map will be a superset of the maps returned by `get-users`."
   [name email]
   ;; This could use comp but it doesn’t because I prefer fn signatures to be specific. Also less typing.

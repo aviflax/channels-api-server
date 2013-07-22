@@ -14,7 +14,7 @@
 (defn to-json
   ([context channels] (to-json context channels nil))
   ([context channels created]
-  (let [add-uri #(assoc % :href (uri/a-channel (:_id %)))
+  (let [add-uri #(assoc % :href (uri/a-channel (:id %)))
         m {:server {:name (:server-name context)}
            :channels (map add-uri channels)}
         ; TODO this seems awkward/iffy. Is there a better way to express this?

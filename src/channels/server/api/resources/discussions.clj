@@ -32,7 +32,7 @@
   [:html h/text-node] (h/replace-vars (maps-for-html context channel))
   [:ul#discussions :li] (h/clone-for [discussion discussions]
                      [:a] (h/do->
-                            (h/set-attr :href (uri/a-discussion (:id channel) (:_id discussion)))
+                            (h/set-attr :href (uri/a-discussion (:id channel) (:id discussion)))
                             (h/content (:subject discussion))))
   [:a#channel] (h/set-attr :href (uri/a-channel (:id channel)))
   [:input#channel-id] (h/set-attr :value (:id channel)))
@@ -77,7 +77,7 @@
                      (string? (:body params))
                      (not (blank? (:body params))))
             ;; request contains body of initial message, so create that right now
-            (db/create-message! channel-id (:_id discussion) (:body params)))
+            (db/create-message! channel-id (:id discussion) (:body params)))
           (-> (represent (get headers "accept") channel-id context discussion)
               (assoc ,,, :status 201)
               (assoc-in ,,, [:headers "Location"] (uri/a-discussion channel-id (:id discussion)))))))))

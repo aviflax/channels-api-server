@@ -28,7 +28,7 @@
   [:html h/text-node] (h/replace-vars context)
   [:ul#users :li] (h/clone-for [user users]
                      [:a] (h/do->
-                            (h/set-attr :href (uri/a-user (:_id user)))
+                            (h/set-attr :href (uri/a-user (:id user)))
                             (h/content (:name user)))))
 
 
@@ -45,7 +45,7 @@
   (let [created (db/create-user! name email)]
     (-> (represent accept-header context created)
         (assoc ,,, :status 201)
-        (assoc-in ,,, [:headers "Location"] (uri/a-user (:_id created))))))
+        (assoc-in ,,, [:headers "Location"] (uri/a-user (:id created))))))
 
 
 (defn create-handler [context]
