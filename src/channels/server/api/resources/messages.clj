@@ -78,6 +78,7 @@
         (not (type-supported? ["application/json" "application/x-www-form-urlencoded"] (get headers "content-type")))
         (error-response 415 "The request representation must be of the type application/json or application/x-www-form-urlencoded.")
 
+        ;; TODO: these next two chunks violate DRY. Refactor.
         (or (nil? user-id)
             (not (string? user-id))
             (blank? user-id))
