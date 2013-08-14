@@ -46,6 +46,44 @@
         (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))))
 
 
+(defn handle-post [context headers {:keys [channel-id subject body] :as params} user-id]
+  (let [user (when (contains-non-blank-string params :user_id)
+                         (db/get-doc user-id))]
+    (cond
+      (not (contains? headers "content-type"))
+      (error-response 400 "The request must include the header Content-Type.")
+
+      (not (type-supported? ["application/json" "application/x-www-form-urlencoded"] (get headers "content-type")))
+      (error-response 415 "The request representation must be of the type application/json or application/x-www-form-urlencoded.")
+
+      (not (non-blank-string subject))
+      (error-response 400 "The request must include the string parameter or property 'subject', and it may not be null or blank.")
+
+      (not (acceptable? acceptable-types (get headers "accept")))
+      (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
+
+      (and (contains-non-blank-string params :user_id)
+           (not user))
+      (error-response 400 "The user specified in 'user_id' does not exist.")
+
+      (and (contains-non-blank-string params :body)
+           (not (contains-non-blank-string params :user_id)))
+      (error-response 400 "If the parameter 'body' is specified then 'user_id' is required as well.")
+
+      (and (contains-non-blank-string params :user_id)
+           (not (contains-non-blank-string params :body)))
+      (error-response 400 "If the parameter 'user_id' is specified then 'body' is required as well.")
+
+      :default
+      (let [discussion (db/create-discussion! subject channel-id)]
+        (when (every? (partial contains-non-blank-string params) [:body :user_id])
+          ;; request contains data for initial message, so create that right now
+          (db/create-message! channel-id (:id discussion) user body))
+        (-> (represent (get headers "accept") channel-id context discussion)
+            (assoc ,,, :status 201)
+            (assoc-in ,,, [:headers "Location"] (uri/a-discussion channel-id (:id discussion))))))))
+
+
 (defn create-handler [context]
   (resource "/channels/:channel-id/discussions"
     (GET
@@ -55,41 +93,6 @@
 
     (POST
       {headers :headers
-       {:keys [channel-id subject body] :as params} :params
+       params :params
        {user-id :user_id} :params}
-
-      (let [user (when (contains-non-blank-string params :user_id)
-                       (db/get-doc user-id))]
-        (cond
-          (not (contains? headers "content-type"))
-          (error-response 400 "The request must include the header Content-Type.")
-
-          (not (type-supported? ["application/json" "application/x-www-form-urlencoded"] (get headers "content-type")))
-          (error-response 415 "The request representation must be of the type application/json or application/x-www-form-urlencoded.")
-
-          (not (non-blank-string subject))
-          (error-response 400 "The request must include the string parameter or property 'subject', and it may not be null or blank.")
-
-          (not (acceptable? acceptable-types (get headers "accept")))
-          (error-response 406 "Not Acceptable; available content types are text/html and application/json.")
-
-          (and (contains-non-blank-string params :user_id)
-               (not user))
-          (error-response 400 "The user specified in 'user_id' does not exist.")
-
-          (and (contains-non-blank-string params :body)
-               (not (contains-non-blank-string params :user_id)))
-          (error-response 400 "If the parameter 'body' is specified then 'user_id' is required as well.")
-
-          (and (contains-non-blank-string params :user_id)
-               (not (contains-non-blank-string params :body)))
-          (error-response 400 "If the parameter 'user_id' is specified then 'body' is required as well.")
-
-          :default
-          (let [discussion (db/create-discussion! subject channel-id)]
-            (when (every? (partial contains-non-blank-string params) [:body :user_id])
-              ;; request contains data for initial message, so create that right now
-              (db/create-message! channel-id (:id discussion) user body))
-            (-> (represent (get headers "accept") channel-id context discussion)
-                (assoc ,,, :status 201)
-                (assoc-in ,,, [:headers "Location"] (uri/a-discussion channel-id (:id discussion))))))))))
+      (handle-post context headers params user-id))))
