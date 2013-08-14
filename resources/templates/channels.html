@@ -3,6 +3,15 @@
 <head>
     <meta charset="utf-8">
     <title>${server-name} » Channels</title>
+    <style>
+      label {
+        display: block;
+      }
+
+      fieldset {
+        margin: 0.5em 0;
+      }
+    </style>
 </head>
 <body>
 
@@ -24,6 +33,22 @@
   <label>Name:
     <input type="text" name="name" id="name" required>
   </label>
+  <label>Participants:
+    <input type="text" name="participants" required>
+  </label>
+
+  <fieldset>
+    <legend>Access Control</legend>
+
+    <label>
+      <input type="radio" name="access_control" value="all-users" checked required> All users of ${server-name}
+    </label>
+
+    <label>
+      <input type="radio" name="access_control" value="participants-and-admins" required> Participants and administrators
+    </label>
+  </fieldset>
+
   <button type="submit">Create Channel</button>
 </form>
 
