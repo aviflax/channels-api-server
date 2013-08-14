@@ -2,7 +2,7 @@
   (:refer-clojure :exclude [replace])
   (:require [cheshire.core :as json]
             [compojure.core :refer [ANY OPTIONS routes]]
-            [clojure.string :refer [join replace]]
+            [clojure.string :refer [blank? join replace]]
             [com.twinql.clojure.conneg :refer [best-allowed-content-type]]))
 
 (defn select-accept-type [acceptable-types accept-header]
@@ -87,3 +87,14 @@
 
   ([s start]
     (map vector (iterate inc start) s)))
+
+
+(defn non-blank-string [v]
+  (and (string? v)
+       (not (blank? v))))
+
+
+(defn contains-non-blank-string [m k]
+  (and (contains? m k)
+       (non-blank-string (get m k))))
+

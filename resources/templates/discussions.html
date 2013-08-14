@@ -7,6 +7,10 @@
     label {
       display: block;
     }
+
+    fieldset {
+      margin: 0.5em 0;
+    }
   </style>
 </head>
 <body>
@@ -31,9 +35,19 @@
   <label>Subject
     <input type="text" name="subject" id="subject" required>
   </label>
-  <label>Initial Message Body (optional)
-    <textarea name="body" id="body"></textarea>
-  </label>
+
+  <fieldset>
+    <legend>Initial Message (optional)</legend>
+
+    <label>Initial Message Body
+      <textarea name="body" id="body"></textarea>
+    </label>
+
+    <label>User ID:
+      <input name="user_id">
+    </label>
+  </fieldset>
+
   <button type="submit">Create Discussion</button>
 </form>
 
