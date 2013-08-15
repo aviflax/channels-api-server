@@ -21,44 +21,48 @@
                            :key-fn #(replace (name %) \- \_)}))
 
 
-(defmacro resource [path & body]
-  "Provides more concise alternative to Compojure’s `routes`, with these features:
+(defmacro resource
+  "Provides more concise and more RESTful alternative to Compojure’s `routes`.
+
+  Specifically:
 
    * Allows the path to be specified only once even if a resource supports multiple methods
    * Adds an OPTIONS route which returns an Allow header
    * Adds an ANY route to return a 405 response for any unsupported method
 
-   Use like so:
-   (resource path method method)
-
    `methods` should be standard compojure routes, except with the path omitted.
+
+   Expands into a call to `routes`, so can be used anywhere `routes` can be used.
 
    For example:
 
-   (resource \"/books\"
+   (resource \"Collection of the books of an author\"
+     \"/authors/:author/books\"
      (GET [author] (get-books author))
-     (POST [title author] (create-book author) (get-books author)))
-  "
+     (POST [author title] (create-book author) (get-books author)))"
+  [name path & methods]
   `(routes
-     ~@(map (fn [[method bindings & exprs]]
-              `(~method ~path ~bindings ~@exprs))
-            body)
+     ;; output the provided method/routes
+     ~@(map (fn [[method-symbol bindings & exprs]]
+              `(~method-symbol ~path ~bindings ~@exprs))
+            methods)
 
-     ~@(let [methods (set (map first body))
-             allowed (->> (map name methods)
+     ;; add supplemental method/routes like OPTIONS, HEAD, etc, and a 405 route for ANY other method
+     ~@(let [method-symbols (set (map first methods))
+             allowed (->> (map str method-symbols)
                           (concat ["OPTIONS" "HEAD"] ,,,)
                           (join ", " ,,,))]
-         `(
-           ~(when-not (methods 'OPTIONS)
-             (let []
-               `(OPTIONS ~path [] {:status 200
-                                   :headers {"Allow" ~allowed}
-                                   :body nil})))
-           ~(when-not (methods 'ANY)
-             `(ANY ~path [] {:status 405
-                             :headers {"Allow" ~allowed
-                                       "Content-Type" "text/plain;charset=UTF-8"}
-                             :body "Method Not Allowed"}))))))
+         (filter (complement nil?)
+                 [;; TODO: add a HEAD route
+                  (when-not (method-symbols 'OPTIONS)
+                    `(OPTIONS ~path [] {:status 204
+                                        :headers {"Allow" ~allowed}
+                                        :body nil}))
+                  (when-not (method-symbols 'ANY)
+                    `(ANY ~path [] {:status 405
+                                    :headers {"Allow" ~allowed
+                                              "Content-Type" "text/plain;charset=UTF-8"}
+                                    :body "Method Not Allowed"}))]))))
 
 
 (defn error-response [code message]
