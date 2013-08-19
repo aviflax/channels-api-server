@@ -49,7 +49,7 @@
 
 
 (defn create-handler [context]
-  (resource "/users"
+  (resource "collection of users" "/users"
     (GET
       {{accept-header "accept"} :headers}
       (represent accept-header context))

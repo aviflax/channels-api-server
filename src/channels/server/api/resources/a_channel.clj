@@ -18,7 +18,7 @@
     (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))
 
 (defn create-handler [context]
-  (resource "/channels/:channel-id"
+  (resource "a channel" "/channels/:channel-id"
     (GET
       {{channel-id :channel-id} :params
        {accept-header "accept"} :headers}

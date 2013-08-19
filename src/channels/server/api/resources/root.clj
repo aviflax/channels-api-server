@@ -27,5 +27,5 @@
     (error-response 406 "Not Acceptable; available content types are text/html and application/json.")))
 
 (defn create-handler [context]
-  (resource "/"
+  (resource "root" "/"
     (GET {{accept-header "accept"} :headers} (represent accept-header context links))))

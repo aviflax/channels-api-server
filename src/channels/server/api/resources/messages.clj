@@ -59,7 +59,7 @@
 
 
 (defn create-handler [context]
-  (resource "/channels/:channel-id/discussions/:discussion-id/messages"
+  (resource "collection of messages" "/channels/:channel-id/discussions/:discussion-id/messages"
     (GET
       {{:keys [channel-id discussion-id]} :params
        {accept-header "accept"} :headers}
