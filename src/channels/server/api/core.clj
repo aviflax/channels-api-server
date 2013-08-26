@@ -12,8 +12,7 @@
                        [handler :as ch]
                        [route :refer [not-found]]]
             [ring.adapter.jetty :as rj]
-            [ring.middleware [json :refer [wrap-json-params]]
-                             [head :refer [wrap-head]]]))
+            [ring.middleware.json :refer [wrap-json-params]]))
 
 ; TODO: it appears that there are cases wherein an exception is thrown but Ring/Compojure return a 200
 ; with no body. The response *should* be a 500. An example case is when the CouchDB DB is missing a view.
@@ -57,9 +56,7 @@
   "this is a var so it can be used by lein-ring"
   (-> (ch/api routes)
       wrap-cors
-      wrap-json-params
-      ;; TODO: there appears to be a bug in wrap-head such that Content-Length gets set to 0
-      wrap-head))
+      wrap-json-params))
 
 (defn -main [& args]
   (println "starting Web server")
