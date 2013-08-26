@@ -64,17 +64,17 @@
           ;; this MUST come before the provided methods/routes, because Compojure’s GET
           ;; route also handles HEAD requests (and has a bug; it sends Content-Length as 0)
           ~(when (and (method-symbols 'GET)
-                     (not (method-symbols 'HEAD)))
-            (let [get-method (-> (filter #(= (first %) 'GET) methods)
-                                 first)
-                  [_ bindings & exprs] get-method]
-              `(HEAD ~path ~bindings
-                 (let [get-response# (do ~@exprs)
-                       response# (dissoc get-response# :body)]
-                   (if (get-in response# [:headers "Content-Length"])
-                       response#
-                       (header response# "Content-Length" (body-length
-                                                            (:body get-response#))))))))
+                      (not (method-symbols 'HEAD)))
+             (let [get-method (-> (filter #(= (first %) 'GET) methods)
+                                  first)
+                   [_ bindings & exprs] get-method]
+               `(HEAD ~path ~bindings
+                  (let [get-response# (do ~@exprs)
+                        response# (dissoc get-response# :body)]
+                    (if (get-in response# [:headers "Content-Length"])
+                        response#
+                        (header response# "Content-Length" (body-length
+                                                             (:body get-response#))))))))
 
           ;; output the provided methods/routes
           ~@(map (fn [[method-symbol bindings & exprs]]
