@@ -1,8 +1,9 @@
 (ns channels.server.api.util
   (:refer-clojure :exclude [replace])
   (:require [cheshire.core :as json]
-            [compojure.core :refer [ANY OPTIONS routes]]
+            [compojure.core :refer [ANY HEAD OPTIONS routes]]
             [clojure.string :refer [blank? join replace]]
+            [ring.util.response :refer [header]]
             [com.twinql.clojure.conneg :refer [best-allowed-content-type]]))
 
 (defn select-accept-type [acceptable-types accept-header]
@@ -21,13 +22,23 @@
                            :key-fn #(replace (name %) \- \_)}))
 
 
+(defn body-length [body]
+  (condp = (type body)
+    String (count (.getBytes body "UTF-8")) ;; TODO: is this treating character encodings correctly?
+    java.io.File (.length body)
+    java.io.InputStream (.available body)
+    ;; TODO: handles seqs!!
+    nil))
+
+
 (defmacro resource
   "Provides more concise and more RESTful alternative to Compojure’s `routes`.
 
   Specifically:
 
    * Allows the path to be specified only once even if a resource supports multiple methods
-   * Adds an OPTIONS route which returns an Allow header
+   * Adds a HEAD route, if GET is specified and HEAD is not
+   * Adds an OPTIONS route which returns an Allow header, if OPTIONS is not specified
    * Adds an ANY route to return a 405 response for any unsupported method
 
    `methods` should be standard compojure routes, except with the path omitted.
@@ -42,22 +53,45 @@
      (POST [author title] (create-book author) (get-books author)))"
   [name path & methods]
   `(routes
-     ;; output the provided method/routes
-     ~@(map (fn [[method-symbol bindings & exprs]]
-              `(~method-symbol ~path ~bindings ~@exprs))
-            methods)
-
-     ;; add supplemental method/routes like OPTIONS, HEAD, etc, and a 405 route for ANY other method
      ~@(let [method-symbols (set (map first methods))
-             allowed (->> (map str method-symbols)
-                          (concat ["OPTIONS" "HEAD"] ,,,)
-                          (join ", " ,,,))]
+           allowed (->> (map str method-symbols)
+                        (concat ["OPTIONS" (when (or (method-symbols 'HEAD)
+                                                     (method-symbols 'GET))
+                                             "HEAD")] ,,,)
+                        (filter (complement nil?) ,,,)
+                        (join ", " ,,,))]
+         ; this is the easiest way I’ve found to sometimes output a certain form and sometimes not
          (filter (complement nil?)
-                 [;; TODO: add a HEAD route
+                 [
+                  ;; add a HEAD route if GET is provided and HEAD is not
+                  ;; this MUST come before the provided methods/routes, because Compojure’s GET
+                  ;; route also handles HEAD requests (and has a bug; it sends Content-Length as 0)
+                  (when (and (method-symbols 'GET)
+                             (not (method-symbols 'HEAD)))
+                    (let [get-method (->> methods
+                                          (filter #(= (first %) 'GET))
+                                          first)
+                          [_ bindings & exprs] get-method]
+                      `(HEAD ~path ~bindings
+                         (let [get-response# (do ~@exprs)
+                               response# (dissoc get-response# :body)]
+                           (if (get-in response# [:headers "Content-Length"])
+                               response#
+                               (header response# "Content-Length" (body-length
+                                                                    (:body get-response#))))))))
+
+                  ;; output the provided methods/routes
+                  (map (fn [[method-symbol bindings & exprs]]
+                           `(~method-symbol ~path ~bindings ~@exprs))
+                       methods)
+
+                  ;; output OPTIONS, if it isn’t already provided
                   (when-not (method-symbols 'OPTIONS)
                     `(OPTIONS ~path [] {:status 204
                                         :headers {"Allow" ~allowed}
                                         :body nil}))
+
+                  ;; output an ANY route to return a 405 for any unsupported method
                   (when-not (method-symbols 'ANY)
                     `(ANY ~path [] {:status 405
                                     :headers {"Allow" ~allowed
