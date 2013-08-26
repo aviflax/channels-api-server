@@ -58,6 +58,13 @@
       wrap-cors
       wrap-json-params))
 
+
+(defn start []
+  (println "starting web server")
+  (let [server (rj/run-jetty ring-handler {:port 3000 :join? false})]
+    (println "web server listening on port 3000")
+    server))
+
+
 (defn -main [& args]
-  (println "starting Web server")
-  (rj/run-jetty ring-handler {:port 3000 :join? false}))
+  (start))
