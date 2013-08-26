@@ -41,16 +41,16 @@
    * Adds an OPTIONS route which returns an Allow header, if OPTIONS is not specified
    * Adds an ANY route to return a 405 response for any unsupported method
 
-   `methods` should be standard compojure routes, except with the path omitted.
+   `methods` should be 1–N standard compojure route forms, except with the path omitted.
 
    Expands into a call to `routes`, so can be used anywhere `routes` can be used.
 
    For example:
 
    (resource \"Collection of the books of an author\"
-     \"/authors/:author/books\"
-     (GET [author] (get-books author))
-     (POST [author title] (create-book author) (get-books author)))"
+             \"/authors/:author/books\"
+             (GET [author] (get-books author))
+             (POST [author title] (create-book author) (get-books author)))"
   [name path & methods]
   `(routes
      ~@(let [method-symbols (set (map first methods))
