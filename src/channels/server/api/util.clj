@@ -52,51 +52,48 @@
              (GET [author] (get-books author))
              (POST [author title] (create-book author) (get-books author)))"
   [name path & methods]
-  `(routes
-     ~@(let [method-symbols (set (map first methods))
-           allowed (->> (map str method-symbols)
-                        (concat ["OPTIONS" (when (or (method-symbols 'HEAD)
-                                                     (method-symbols 'GET))
-                                             "HEAD")] ,,,)
-                        (filter (complement nil?) ,,,)
-                        (join ", " ,,,))]
-         ; this is the easiest way I’ve found to sometimes output a certain form and sometimes not
-         (filter (complement nil?)
-                 [
-                  ;; add a HEAD route if GET is provided and HEAD is not
-                  ;; this MUST come before the provided methods/routes, because Compojure’s GET
-                  ;; route also handles HEAD requests (and has a bug; it sends Content-Length as 0)
-                  (when (and (method-symbols 'GET)
-                             (not (method-symbols 'HEAD)))
-                    (let [get-method (->> methods
-                                          (filter #(= (first %) 'GET))
-                                          first)
-                          [_ bindings & exprs] get-method]
-                      `(HEAD ~path ~bindings
-                         (let [get-response# (do ~@exprs)
-                               response# (dissoc get-response# :body)]
-                           (if (get-in response# [:headers "Content-Length"])
-                               response#
-                               (header response# "Content-Length" (body-length
-                                                                    (:body get-response#))))))))
+  (let [method-symbols (set (map first methods))
+        allowed (->> (map str method-symbols)
+                     (concat ["OPTIONS" (when (or (method-symbols 'HEAD)
+                                                  (method-symbols 'GET))
+                                              "HEAD")] ,,,)
+                     (filter (complement nil?) ,,,)
+                     (join ", " ,,,))]
+    `(routes
+          ;; add a HEAD route if GET is provided and HEAD is not
+          ;; this MUST come before the provided methods/routes, because Compojure’s GET
+          ;; route also handles HEAD requests (and has a bug; it sends Content-Length as 0)
+          ~(when (and (method-symbols 'GET)
+                     (not (method-symbols 'HEAD)))
+            (let [get-method (->> methods
+                                  (filter #(= (first %) 'GET))
+                                  first)
+                  [_ bindings & exprs] get-method]
+              `(HEAD ~path ~bindings
+                 (let [get-response# (do ~@exprs)
+                       response# (dissoc get-response# :body)]
+                   (if (get-in response# [:headers "Content-Length"])
+                       response#
+                       (header response# "Content-Length" (body-length
+                                                            (:body get-response#))))))))
 
-                  ;; output the provided methods/routes
-                  (map (fn [[method-symbol bindings & exprs]]
-                           `(~method-symbol ~path ~bindings ~@exprs))
-                       methods)
+          ;; output the provided methods/routes
+          ~@(map (fn [[method-symbol bindings & exprs]]
+                   `(~method-symbol ~path ~bindings ~@exprs))
+                 methods)
 
-                  ;; output OPTIONS, if it isn’t already provided
-                  (when-not (method-symbols 'OPTIONS)
-                    `(OPTIONS ~path [] {:status 204
-                                        :headers {"Allow" ~allowed}
-                                        :body nil}))
+          ;; output OPTIONS, if it isn’t already provided
+          ~(when-not (method-symbols 'OPTIONS)
+            `(OPTIONS ~path [] {:status 204
+                                :headers {"Allow" ~allowed}
+                                :body nil}))
 
-                  ;; output an ANY route to return a 405 for any unsupported method
-                  (when-not (method-symbols 'ANY)
-                    `(ANY ~path [] {:status 405
-                                    :headers {"Allow" ~allowed
-                                              "Content-Type" "text/plain;charset=UTF-8"}
-                                    :body "Method Not Allowed"}))]))))
+          ;; output an ANY route to return a 405 for any unsupported method
+          ~(when-not (method-symbols 'ANY)
+            `(ANY ~path [] {:status 405
+                            :headers {"Allow" ~allowed
+                                      "Content-Type" "text/plain;charset=UTF-8"}
+                            :body "Method Not Allowed"})))))
 
 
 (defn error-response [code message]
