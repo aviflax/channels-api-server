@@ -65,9 +65,8 @@
           ;; route also handles HEAD requests (and has a bug; it sends Content-Length as 0)
           ~(when (and (method-symbols 'GET)
                      (not (method-symbols 'HEAD)))
-            (let [get-method (->> methods
-                                  (filter #(= (first %) 'GET))
-                                  first)
+            (let [get-method (-> (filter #(= (first %) 'GET) methods)
+                                 first)
                   [_ bindings & exprs] get-method]
               `(HEAD ~path ~bindings
                  (let [get-response# (do ~@exprs)
