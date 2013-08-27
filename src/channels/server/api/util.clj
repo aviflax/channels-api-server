@@ -23,11 +23,12 @@
 
 
 (defn body-length [body]
-  (condp = (type body)
-    String (count (.getBytes body "UTF-8")) ;; TODO: is this treating character encodings correctly?
+  ;; TODO: is this treating character encodings correctly?
+  (condp instance? body
+    String (count body)
     java.io.File (.length body)
     java.io.InputStream (.available body)
-    ;; TODO: handles seqs!!
+    clojure.lang.ISeq (count (join body))
     nil))
 
 
@@ -73,6 +74,7 @@
                         response# (dissoc get-response# :body)]
                     (if (get-in response# [:headers "Content-Length"])
                         response#
+                        ;; TODO: how to handle case where body-length could not determine a length?
                         (header response# "Content-Length" (body-length
                                                              (:body get-response#))))))))
 
