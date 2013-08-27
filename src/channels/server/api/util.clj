@@ -61,40 +61,48 @@
                      (filter (complement nil?) ,,,)
                      (join ", " ,,,))]
     `(routes
-          ;; add a HEAD route if GET is provided and HEAD is not
-          ;; this MUST come before the provided methods/routes, because Compojure’s GET
-          ;; route also handles HEAD requests (and has a bug; it sends Content-Length as 0)
-          ~(when (and (method-symbols 'GET)
-                      (not (method-symbols 'HEAD)))
-             (let [get-method (-> (filter #(= (first %) 'GET) methods)
-                                  first)
-                   [_ bindings & exprs] get-method]
-               `(HEAD ~path ~bindings
-                  (let [get-response# (do ~@exprs)
-                        response# (dissoc get-response# :body)]
-                    (if (get-in response# [:headers "Content-Length"])
-                        response#
-                        ;; TODO: how to handle case where body-length could not determine a length?
-                        (header response# "Content-Length" (body-length
-                                                             (:body get-response#))))))))
+      ;; Building a list “manually” using concat (as opposed to just unquote-splicing)
+      ;; because the “when” forms can produce nil values which must be filtered out of the list
+      ~@(-> [
+            ;; add a HEAD route if GET is provided and HEAD is not
+            ;; this MUST come before the provided methods/routes, because Compojure’s GET
+            ;; route also handles HEAD requests (and has a bug; it sends Content-Length as 0)
+            (when (and (method-symbols 'GET)
+                        (not (method-symbols 'HEAD)))
+               (let [get-method (-> (filter #(= (first %) 'GET) methods)
+                                    first)
+                     [_ bindings & exprs] get-method]
+                 `(HEAD ~path ~bindings
+                    (let [get-response# (do ~@exprs)
+                          response# (dissoc get-response# :body)]
+                      (if (get-in response# [:headers "Content-Length"])
+                          response#
+                          ;; TODO: how to handle case where body-length could not determine a length?
+                          (header response# "Content-Length" (body-length
+                                                               (:body get-response#))))))))
+            ]
 
-          ;; output the provided methods/routes
-          ~@(map (fn [[method-symbol bindings & exprs]]
-                   `(~method-symbol ~path ~bindings ~@exprs))
-                 methods)
+            (concat ,,,
+                    ;; output the provided methods/routes
+                    (map (fn [[method-symbol bindings & exprs]]
+                             `(~method-symbol ~path ~bindings ~@exprs))
+                           methods))
 
-          ;; output OPTIONS, if it isn’t already provided
-          ~(when-not (method-symbols 'OPTIONS)
-            `(OPTIONS ~path [] {:status 204
-                                :headers {"Allow" ~allowed}
-                                :body nil}))
+            (concat ,,, [
+                    ;; output OPTIONS, if it isn’t already provided
+                    (when-not (method-symbols 'OPTIONS)
+                      `(OPTIONS ~path [] {:status 204
+                                          :headers {"Allow" ~allowed}
+                                          :body nil}))
 
-          ;; output an ANY route to return a 405 for any unsupported method
-          ~(when-not (method-symbols 'ANY)
-            `(ANY ~path [] {:status 405
-                            :headers {"Allow" ~allowed
-                                      "Content-Type" "text/plain;charset=UTF-8"}
-                            :body "Method Not Allowed"})))))
+                    ;; output an ANY route to return a 405 for any unsupported method
+                    (when-not (method-symbols 'ANY)
+                      `(ANY ~path [] {:status 405
+                                      :headers {"Allow" ~allowed
+                                                "Content-Type" "text/plain;charset=UTF-8"}
+                                      :body "Method Not Allowed"}))
+            ])
+            (->> (filter (complement nil?) ,,,))))))
 
 
 (defn error-response [code message]
