@@ -1,5 +1,5 @@
-(defproject channels-server "0.1.0-SNAPSHOT"
-  :description "Server for Channels, hosting the API and mail servers"
+(defproject channels-api-server "0.1.0-SNAPSHOT"
+  :description "API Server for Channels, hosting the API and mail servers"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
