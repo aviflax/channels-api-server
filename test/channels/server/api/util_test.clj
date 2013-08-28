@@ -2,7 +2,8 @@
   (:use clojure.test)
   (:require [channels.server.api.util :refer [resource]]
             [compojure.core :refer [GET HEAD OPTIONS POST]]
-            [clojure.java.io :refer [file input-stream]]))
+            [clojure.java.io :refer [file input-stream]]
+            [clojure.string :refer [split]]))
 
 
 (deftest test-resource
@@ -125,4 +126,46 @@
                :request-method :head
                :headers {"accept" "*/*"}}
           res (handler req)]
-      (is (= (:status res) 405)))))
+      (is (= (:status res) 405))
+      (is (.contains (get-in res [:headers "Content-Type"]) "text/plain"))
+      (is (= (get-in res [:headers "Content-Length"]) "18"))
+      (let [res-allow-header (get-in res [:headers "Allow"])
+            res-allow-methods (set (split res-allow-header #", "))]
+        (is (= res-allow-methods #{"POST" "OPTIONS"})))
+      (is (= (:body res "Method Not Allowed")))))
+
+
+  (testing "when a resource doesn’t supply a POST route, a POST request should return 405"
+    (let [handler (resource "foo" "/"
+                    (GET [] {:status 200
+                              :headers {"Content-Type" "text/plain", "Content-Length" "3"}
+                              :body "foo"}))
+          req {:uri "/"
+               :request-method :post
+               :headers {"accept" "*/*"}}
+          res (handler req)]
+      (is (= (:status res) 405))
+      (is (.contains (get-in res [:headers "Content-Type"]) "text/plain"))
+      (is (= (get-in res [:headers "Content-Length"]) "18"))
+      (let [res-allow-header (get-in res [:headers "Allow"])
+            res-allow-methods (set (split res-allow-header #", "))]
+        (is (= res-allow-methods #{"GET" "HEAD" "OPTIONS"})))
+      (is (= (:body res "Method Not Allowed")))))
+
+
+  (testing "a resource should support OPTIONS"
+    (let [handler (resource "foo" "/"
+                    (GET [] {:status 200
+                             :headers {"Content-Type" "text/plain"}
+                             :body "bar"})
+                    (POST [] {:status 200
+                              :headers {"Content-Type" "text/plain", "Content-Length" "8"}
+                              :body "Success!"}))
+          req {:uri "/"
+               :request-method :options}
+          res (handler req)]
+      (is (= (:status res) 204))
+      (is (empty? (:body res)))
+      (let [res-allow-header (get-in res [:headers "Allow"])
+            res-allow-methods (set (split res-allow-header #", "))]
+        (is (= res-allow-methods #{"GET" "HEAD" "POST" "OPTIONS"}))))))

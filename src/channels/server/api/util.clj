@@ -99,7 +99,8 @@
                     (when-not (method-symbols 'ANY)
                       `(ANY ~path [] {:status 405
                                       :headers {"Allow" ~allowed
-                                                "Content-Type" "text/plain;charset=UTF-8"}
+                                                "Content-Type" "text/plain;charset=UTF-8"
+                                                "Content-Length" "18"}
                                       :body "Method Not Allowed"}))
             ])
             (->> (filter (complement nil?) ,,,))))))
