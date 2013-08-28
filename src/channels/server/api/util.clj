@@ -28,7 +28,7 @@
     String (count body)
     java.io.File (.length body)
     java.io.InputStream (.available body)
-    clojure.lang.ISeq (count (join body))
+    clojure.lang.ISeq (reduce + (map (comp count str) body))
     nil))
 
 
