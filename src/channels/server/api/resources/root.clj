@@ -1,6 +1,7 @@
 (ns channels.server.api.resources.root
   (:require [channels.server.api.shared :refer [acceptable-types]]
-            [channels.server.api.util :refer [error-response pretty-json resource select-accept-type]]
+            [channels.server.api.util :refer [error-response pretty-json select-accept-type]]
+            [resourceful :refer [resource]]
             [compojure.core :refer [GET]]
             [net.cgrand.enlive-html :as h]))
 

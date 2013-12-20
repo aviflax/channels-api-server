@@ -1,9 +1,10 @@
 (ns channels.server.api.resources.discussions
   (:require [channels.server.api.shared :refer [acceptable-types]]
             [channels.server.api.uri :as uri]
-            [channels.server.api.util :refer [acceptable? contains-non-blank-string error-response maps-for-html non-blank-string pretty-json resource select-accept-type type-supported?]]
+            [channels.server.api.util :refer [acceptable? contains-non-blank-string error-response maps-for-html non-blank-string pretty-json select-accept-type type-supported?]]
             [compojure.core :refer [GET POST]]
             [net.cgrand.enlive-html :as h]
+            [resourceful :refer [resource]]
             [channels.server.api.db :as db]))
 
 (defn to-json

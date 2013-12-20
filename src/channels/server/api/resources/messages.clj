@@ -1,9 +1,10 @@
 (ns channels.server.api.resources.messages
   (:require [channels.server.api.shared :refer [acceptable-types]]
             [channels.server.api.uri :as uri]
-          [channels.server.api.util :refer [acceptable? maps-for-html error-response indexed pretty-json resource select-accept-type type-supported?]]
+          [channels.server.api.util :refer [acceptable? maps-for-html error-response indexed pretty-json select-accept-type type-supported?]]
             [compojure.core :refer [GET POST]]
             [net.cgrand.enlive-html :as h]
+            [resourceful :refer [resource]]
             [channels.server.api.db :as db]
             [clojure.string :refer [blank?]]
             [clojure.pprint :refer :all]))

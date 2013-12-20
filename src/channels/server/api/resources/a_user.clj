@@ -1,8 +1,9 @@
 (ns channels.server.api.resources.a-user
   (:require [channels.server.api.shared :refer [acceptable-types]]
-            [channels.server.api.util :refer [maps-for-html error-response pretty-json resource select-accept-type]]
+            [channels.server.api.util :refer [maps-for-html error-response pretty-json select-accept-type]]
             [compojure.core :refer [GET]]
             [net.cgrand.enlive-html :as h]
+            [resourceful :refer [resource]]
             [channels.server.api.db :as db]))
 
 (h/deftemplate html-template "templates/a_user.html"
